@@ -12,7 +12,7 @@ Requirements:
 import json
 import logging
 import os
-from render.workflows import task, Options, Retry
+from render_sdk.workflows import task, Options, Retry
 
 logger = logging.getLogger(__name__)
 

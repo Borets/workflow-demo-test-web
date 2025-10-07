@@ -6,7 +6,7 @@ Shows how to execute multiple tasks concurrently.
 
 import asyncio
 import logging
-from render.workflows import task
+from render_sdk.workflows import task
 from workflows.basic_tasks import square, cube
 
 logger = logging.getLogger(__name__)

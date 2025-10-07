@@ -10,7 +10,7 @@ These tasks show:
 
 import asyncio
 import logging
-from render.workflows import task
+from render_sdk.workflows import task
 from workflows.openai_tasks import analyze_text_sentiment, translate_text, summarize_text
 
 logger = logging.getLogger(__name__)

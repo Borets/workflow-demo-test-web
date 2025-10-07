@@ -4,8 +4,8 @@ Endpoints for OpenAI integration examples.
 
 from typing import Any
 from fastapi import APIRouter, HTTPException
-from render.client import Client
-from render.client.errors import RenderError
+from render_sdk.client import Client
+from render_sdk.client.errors import RenderError
 import os
 
 from ..models import TaskResponse

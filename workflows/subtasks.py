@@ -5,7 +5,7 @@ Demonstrates how tasks can call other tasks using await syntax.
 """
 
 import logging
-from render.workflows import task
+from render_sdk.workflows import task
 from workflows.basic_tasks import square, multiply
 
 logger = logging.getLogger(__name__)

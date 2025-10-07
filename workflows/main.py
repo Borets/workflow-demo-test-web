@@ -16,7 +16,7 @@ from workflows import (
     advanced_tasks,   # Complex pipelines
 )
 
-from render.workflows import start
+from render_sdk.workflows import start
 
 # Configure logging
 logging.basicConfig(
