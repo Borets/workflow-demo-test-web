@@ -8,7 +8,7 @@ from render.client import Client
 from render.client.errors import RenderError
 import os
 
-from backend.models import TaskResponse
+from ..models import TaskResponse
 
 router = APIRouter()
 

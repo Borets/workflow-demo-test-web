@@ -189,7 +189,7 @@ render-sdk-examples/
 - **Name**: `render-sdk-backend`
 - **Type**: Web Service
 - **Build Command**: `cd backend && pip install -r requirements.txt`
-- **Start Command**: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
 - **Environment Variables**:
   - `RENDER_API_KEY`
   - `OPENAI_API_KEY` (optional)

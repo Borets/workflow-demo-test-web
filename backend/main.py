@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from backend.routes import basic, subtasks, parallel, openai, advanced
+from .routes import basic, subtasks, parallel, openai, advanced
 
 # Load environment variables
 load_dotenv()
