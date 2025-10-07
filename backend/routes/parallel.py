@@ -34,7 +34,7 @@ async def compute_multiple(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("compute_multiple", data)
+        task_run = await client.workflows.run_task("compute_multiple", [data["numbers"]])
         result = await task_run
 
         return TaskResponse(
@@ -60,7 +60,7 @@ async def sum_of_squares(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("sum_of_squares", data)
+        task_run = await client.workflows.run_task("sum_of_squares", [data["numbers"]])
         result = await task_run
 
         return TaskResponse(

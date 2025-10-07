@@ -29,7 +29,7 @@ async def add_squares(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("add_squares", data)
+        task_run = await client.workflows.run_task("add_squares", [data["a"], data["b"]])
         result = await task_run
 
         return TaskResponse(
@@ -51,7 +51,7 @@ async def calculate_area(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("calculate_area", data)
+        task_run = await client.workflows.run_task("calculate_area", [data["length"], data["width"]])
         result = await task_run
 
         return TaskResponse(

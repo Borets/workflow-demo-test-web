@@ -37,7 +37,7 @@ async def process_document(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("process_document_pipeline", data)
+        task_run = await client.workflows.run_task("process_document_pipeline", [data["document"], data.get("translate_to")])
         result = await task_run
 
         return TaskResponse(
@@ -65,7 +65,7 @@ async def parallel_sentiment(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("parallel_sentiment_analysis", data)
+        task_run = await client.workflows.run_task("parallel_sentiment_analysis", [data["texts"]])
         result = await task_run
 
         return TaskResponse(
@@ -97,7 +97,7 @@ async def multi_language_summary(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("multi_language_summary", data)
+        task_run = await client.workflows.run_task("multi_language_summary", [data["text"], data["languages"]])
         result = await task_run
 
         return TaskResponse(

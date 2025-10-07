@@ -29,7 +29,7 @@ async def square(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("square", data)
+        task_run = await client.workflows.run_task("square", [data["a"]])
         result = await task_run
 
         return TaskResponse(
@@ -51,7 +51,7 @@ async def cube(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("cube", data)
+        task_run = await client.workflows.run_task("cube", [data["a"]])
         result = await task_run
 
         return TaskResponse(
@@ -73,7 +73,7 @@ async def greet(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("greet", data)
+        task_run = await client.workflows.run_task("greet", [data["name"]])
         result = await task_run
 
         return TaskResponse(
@@ -95,7 +95,7 @@ async def add_numbers(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("add_with_retry", data)
+        task_run = await client.workflows.run_task("add_with_retry", [data["a"], data["b"]])
         result = await task_run
 
         return TaskResponse(
@@ -117,7 +117,7 @@ async def multiply(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("multiply", data)
+        task_run = await client.workflows.run_task("multiply", [data["a"], data["b"]])
         result = await task_run
 
         return TaskResponse(

@@ -29,7 +29,7 @@ async def analyze_sentiment(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("analyze_text_sentiment", data)
+        task_run = await client.workflows.run_task("analyze_text_sentiment", [data["text"]])
         result = await task_run
 
         return TaskResponse(
@@ -51,7 +51,7 @@ async def translate(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("translate_text", data)
+        task_run = await client.workflows.run_task("translate_text", [data["text"], data["target_language"]])
         result = await task_run
 
         return TaskResponse(
@@ -73,7 +73,7 @@ async def summarize(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("summarize_text", data)
+        task_run = await client.workflows.run_task("summarize_text", [data["text"], data.get("max_sentences", 3)])
         result = await task_run
 
         return TaskResponse(
