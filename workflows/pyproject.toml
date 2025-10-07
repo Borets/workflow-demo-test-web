@@ -1,0 +1,13 @@
+[project]
+name = "workflows"
+version = "0.1.0"
+description = "Render SDK Workflow Examples"
+requires-python = ">=3.10"
+dependencies = [
+    "render_sdk>=0.1.0",
+    "openai>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
