@@ -2,9 +2,9 @@
 name = "workflows"
 version = "0.1.0"
 description = "Render SDK Workflow Examples"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<4.0"
 dependencies = [
-    "render_sdk>=0.1.0, <4.0",
+    "render_sdk>=0.1",
     "openai>=1.0.0",
 ]
 
