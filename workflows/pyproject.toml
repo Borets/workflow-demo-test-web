@@ -1,16 +1,16 @@
-[project]
+[tool.poetry]
 name = "workflows"
 version = "0.1.0"
 description = "Render SDK Workflow Examples"
-requires-python = ">=3.10,<4.0"
-dependencies = [
-    "render_sdk>=0.1",
-    "openai>=1.0.0",
-]
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+render_sdk = ">=0.1"
+openai = ">=1.0.0"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.poetry]
-package-mode = false
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
