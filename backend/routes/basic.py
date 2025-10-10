@@ -29,7 +29,7 @@ async def square(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("square", [data["a"]])
+        task_run = await client.workflows.run_task("slav-workflow-demo-test-workflow-service/square", [data["a"]])
         result = await task_run
 
         return TaskResponse(
