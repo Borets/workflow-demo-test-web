@@ -8,13 +8,11 @@ The runner will register all tasks with Render and execute them when triggered.
 import logging
 
 # Import all task modules to register tasks
-from workflows import (
-    basic_tasks,      # Simple sync/async tasks
-    subtasks,         # Tasks calling other tasks
-    parallel_tasks,   # Parallel execution examples
-    openai_tasks,     # OpenAI/LLM integration
-    advanced_tasks,   # Complex pipelines
-)
+import basic_tasks      # Simple sync/async tasks
+import subtasks         # Tasks calling other tasks
+import parallel_tasks   # Parallel execution examples
+import openai_tasks     # OpenAI/LLM integration
+import advanced_tasks   # Complex pipelines
 
 from render_sdk.workflows import start
 
