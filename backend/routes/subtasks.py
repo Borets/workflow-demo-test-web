@@ -19,6 +19,11 @@ def get_client() -> Client:
         raise HTTPException(status_code=500, detail="RENDER_API_KEY not configured")
     return Client(api_key)
 
+def get_task_name(task: str) -> str:
+    """Get full task name with service slug if configured."""
+    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "slav-workflow-demo-test-workflow-service")
+    return f"{service_slug}/{task}"
+
 @router.post("/add_squares", response_model=TaskResponse)
 async def add_squares(data: dict[str, Any]):
     """
@@ -29,7 +34,7 @@ async def add_squares(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("add_squares", [data["a"], data["b"]])
+        task_run = await client.workflows.run_task(get_task_name("add_squares"), [data["a"], data["b"]])
         result = await task_run
 
         return TaskResponse(
@@ -51,7 +56,7 @@ async def calculate_area(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("calculate_area", [data["length"], data["width"]])
+        task_run = await client.workflows.run_task(get_task_name("calculate_area"), [data["length"], data["width"]])
         result = await task_run
 
         return TaskResponse(

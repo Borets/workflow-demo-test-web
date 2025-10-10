@@ -19,6 +19,11 @@ def get_client() -> Client:
         raise HTTPException(status_code=500, detail="RENDER_API_KEY not configured")
     return Client(api_key)
 
+def get_task_name(task: str) -> str:
+    """Get full task name with service slug if configured."""
+    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "slav-workflow-demo-test-workflow-service")
+    return f"{service_slug}/{task}"
+
 @router.post("/compute_multiple", response_model=TaskResponse)
 async def compute_multiple(data: dict[str, Any]):
     """
@@ -34,7 +39,7 @@ async def compute_multiple(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("compute_multiple", [data["numbers"]])
+        task_run = await client.workflows.run_task(get_task_name("compute_multiple"), [data["numbers"]])
         result = await task_run
 
         return TaskResponse(
@@ -60,7 +65,7 @@ async def sum_of_squares(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("sum_of_squares", [data["numbers"]])
+        task_run = await client.workflows.run_task(get_task_name("sum_of_squares"), [data["numbers"]])
         result = await task_run
 
         return TaskResponse(

@@ -19,6 +19,11 @@ def get_client() -> Client:
         raise HTTPException(status_code=500, detail="RENDER_API_KEY not configured")
     return Client(api_key)
 
+def get_task_name(task: str) -> str:
+    """Get full task name with service slug if configured."""
+    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "slav-workflow-demo-test-workflow-service")
+    return f"{service_slug}/{task}"
+
 @router.post("/process_document", response_model=TaskResponse)
 async def process_document(data: dict[str, Any]):
     """
@@ -37,7 +42,7 @@ async def process_document(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("process_document_pipeline", [data["document"], data.get("translate_to")])
+        task_run = await client.workflows.run_task(get_task_name("process_document_pipeline"), [data["document"], data.get("translate_to")])
         result = await task_run
 
         return TaskResponse(
@@ -65,7 +70,7 @@ async def parallel_sentiment(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("parallel_sentiment_analysis", [data["texts"]])
+        task_run = await client.workflows.run_task(get_task_name("parallel_sentiment_analysis"), [data["texts"]])
         result = await task_run
 
         return TaskResponse(
@@ -97,7 +102,7 @@ async def multi_language_summary(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("multi_language_summary", [data["text"], data["languages"]])
+        task_run = await client.workflows.run_task(get_task_name("multi_language_summary"), [data["text"], data["languages"]])
         result = await task_run
 
         return TaskResponse(

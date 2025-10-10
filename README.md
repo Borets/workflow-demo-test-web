@@ -240,6 +240,7 @@ Once the backend is running, visit:
 ### Required
 
 - `RENDER_API_KEY` - Your Render API key (get from Render dashboard)
+- `WORKFLOW_SERVICE_SLUG` - Your workflow service slug (e.g., `slav-workflow-demo-test-workflow-service`)
 
 ### Optional
 

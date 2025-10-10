@@ -19,6 +19,11 @@ def get_client() -> Client:
         raise HTTPException(status_code=500, detail="RENDER_API_KEY not configured")
     return Client(api_key)
 
+def get_task_name(task: str) -> str:
+    """Get full task name with service slug if configured."""
+    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "slav-workflow-demo-test-workflow-service")
+    return f"{service_slug}/{task}"
+
 @router.post("/analyze_sentiment", response_model=TaskResponse)
 async def analyze_sentiment(data: dict[str, Any]):
     """
@@ -29,7 +34,7 @@ async def analyze_sentiment(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("analyze_text_sentiment", [data["text"]])
+        task_run = await client.workflows.run_task(get_task_name("analyze_text_sentiment"), [data["text"]])
         result = await task_run
 
         return TaskResponse(
@@ -51,7 +56,7 @@ async def translate(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("translate_text", [data["text"], data["target_language"]])
+        task_run = await client.workflows.run_task(get_task_name("translate_text"), [data["text"], data["target_language"]])
         result = await task_run
 
         return TaskResponse(
@@ -73,7 +78,7 @@ async def summarize(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task("summarize_text", [data["text"], data.get("max_sentences", 3)])
+        task_run = await client.workflows.run_task(get_task_name("summarize_text"), [data["text"], data.get("max_sentences", 3)])
         result = await task_run
 
         return TaskResponse(
