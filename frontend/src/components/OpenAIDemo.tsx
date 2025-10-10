@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runAnalyzeSentiment, runTranslate, runSummarize } from '../services/api'
-import TaskResult from './TaskResult'
-import type { TaskResponse } from '../types'
+import { useTaskRunner } from '../hooks/useTaskRunner'
 
 export default function OpenAIDemo() {
-  const [result, setResult] = useState<TaskResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { runTask } = useTaskRunner()
 
   // Form states
   const [sentimentText, setSentimentText] = useState('I absolutely love this product! It works perfectly.')
@@ -16,19 +13,6 @@ export default function OpenAIDemo() {
     'Artificial intelligence is rapidly transforming the world. Machine learning algorithms are becoming more sophisticated, enabling computers to perform tasks that were once thought to require human intelligence. From healthcare to finance, AI is being applied across various industries to improve efficiency and decision-making.'
   )
   const [maxSentences, setMaxSentences] = useState('2')
-
-  const handleTask = async (taskFn: () => Promise<any>) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await taskFn()
-      setResult(response.data)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -61,9 +45,8 @@ export default function OpenAIDemo() {
             placeholder="Enter text to analyze"
           />
           <button
-            onClick={() => handleTask(() => runAnalyzeSentiment(sentimentText))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 w-full"
+            onClick={() => runTask('Sentiment Analysis', () => runAnalyzeSentiment(sentimentText), { text: sentimentText })}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
             Analyze Sentiment
           </button>
@@ -95,9 +78,8 @@ export default function OpenAIDemo() {
             placeholder="Target language (e.g., Spanish, French, Japanese)"
           />
           <button
-            onClick={() => handleTask(() => runTranslate(translateText, targetLanguage))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 w-full"
+            onClick={() => runTask('Translate Text', () => runTranslate(translateText, targetLanguage), { text: translateText, target_language: targetLanguage })}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
             Translate
           </button>
@@ -131,25 +113,19 @@ export default function OpenAIDemo() {
             max="10"
           />
           <button
-            onClick={() => handleTask(() => runSummarize(summarizeText, parseInt(maxSentences)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 w-full"
+            onClick={() => runTask('Summarize Text', () => runSummarize(summarizeText, parseInt(maxSentences)), { text: summarizeText, max_sentences: parseInt(maxSentences) })}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
             Summarize
           </button>
         </div>
       </div>
 
-      {/* Loading indicator */}
-      {loading && (
-        <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-600">Running task (this may take a few seconds)...</p>
-        </div>
-      )}
-
-      {/* Results */}
-      <TaskResult result={result} error={error} />
+      <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <p className="text-sm text-green-800">
+          🤖 OpenAI-powered tasks! Run multiple AI operations concurrently. Check the sidebar to track progress.
+        </p>
+      </div>
     </div>
   )
 }

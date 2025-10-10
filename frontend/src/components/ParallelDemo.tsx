@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runComputeMultiple, runSumOfSquares } from '../services/api'
-import TaskResult from './TaskResult'
-import type { TaskResponse } from '../types'
+import { useTaskRunner } from '../hooks/useTaskRunner'
 
 export default function ParallelDemo() {
-  const [result, setResult] = useState<TaskResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { runTask } = useTaskRunner()
 
   // Form states
   const [computeNumbers, setComputeNumbers] = useState('2, 3, 4')
@@ -14,19 +11,6 @@ export default function ParallelDemo() {
 
   const parseNumbers = (input: string): number[] => {
     return input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
-  }
-
-  const handleTask = async (taskFn: () => Promise<any>) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await taskFn()
-      setResult(response.data)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message)
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -56,9 +40,12 @@ export default function ParallelDemo() {
             placeholder="Enter numbers (comma-separated)"
           />
           <button
-            onClick={() => handleTask(() => runComputeMultiple(parseNumbers(computeNumbers)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Compute Multiple',
+              () => runComputeMultiple(parseNumbers(computeNumbers)),
+              { numbers: parseNumbers(computeNumbers) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
@@ -85,25 +72,23 @@ export default function ParallelDemo() {
             placeholder="Enter numbers (comma-separated)"
           />
           <button
-            onClick={() => handleTask(() => runSumOfSquares(parseNumbers(sumNumbers)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Sum of Squares',
+              () => runSumOfSquares(parseNumbers(sumNumbers)),
+              { numbers: parseNumbers(sumNumbers) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
         </div>
       </div>
 
-      {/* Loading indicator */}
-      {loading && (
-        <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-600">Running task...</p>
-        </div>
-      )}
-
-      {/* Results */}
-      <TaskResult result={result} error={error} />
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-800">
+          ℹ️ Parallel workflows run multiple internal subtasks concurrently! Watch the sidebar to see execution in real-time.
+        </p>
+      </div>
     </div>
   )
 }

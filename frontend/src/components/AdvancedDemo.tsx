@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runProcessDocument, runParallelSentiment, runMultiLanguageSummary } from '../services/api'
-import TaskResult from './TaskResult'
-import type { TaskResponse } from '../types'
+import { useTaskRunner } from '../hooks/useTaskRunner'
 
 export default function AdvancedDemo() {
-  const [result, setResult] = useState<TaskResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { runTask } = useTaskRunner()
 
   // Form states
   const [document, setDocument] = useState(
@@ -30,19 +27,6 @@ export default function AdvancedDemo() {
 
   const parseTexts = (input: string): string[] => {
     return input.split('\n').filter(t => t.trim().length > 0)
-  }
-
-  const handleTask = async (taskFn: () => Promise<any>) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await taskFn()
-      setResult(response.data)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message)
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -100,12 +84,12 @@ export default function AdvancedDemo() {
             )}
           </div>
           <button
-            onClick={() => handleTask(() => runProcessDocument(
-              document,
-              enableTranslation ? translateTo : undefined
-            ))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 w-full"
+            onClick={() => runTask(
+              'Process Document Pipeline',
+              () => runProcessDocument(document, enableTranslation ? translateTo : undefined),
+              { document, translate_to: enableTranslation ? translateTo : undefined }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
             Process Document
           </button>
@@ -131,9 +115,12 @@ export default function AdvancedDemo() {
             placeholder="Enter texts to analyze (one per line)"
           />
           <button
-            onClick={() => handleTask(() => runParallelSentiment(parseTexts(sentimentTexts)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 w-full"
+            onClick={() => runTask(
+              'Parallel Sentiment Analysis',
+              () => runParallelSentiment(parseTexts(sentimentTexts)),
+              { texts: parseTexts(sentimentTexts) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
             Analyze All in Parallel
           </button>
@@ -169,27 +156,24 @@ export default function AdvancedDemo() {
             placeholder="Target languages (comma-separated)"
           />
           <button
-            onClick={() => handleTask(() => runMultiLanguageSummary(summaryText, parseLanguages(languages)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 w-full"
+            onClick={() => runTask(
+              'Multi-Language Summary',
+              () => runMultiLanguageSummary(summaryText, parseLanguages(languages)),
+              { text: summaryText, languages: parseLanguages(languages) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
             Generate Multi-Language Summary
           </button>
         </div>
       </div>
 
-      {/* Loading indicator */}
-      {loading && (
-        <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-600">
-            Running advanced workflow (this may take 10-30 seconds)...
-          </p>
-        </div>
-      )}
-
-      {/* Results */}
-      <TaskResult result={result} error={error} />
+      <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <p className="text-sm text-purple-800">
+          🚀 Complex multi-stage workflows! These tasks orchestrate multiple subtasks and can run concurrently. 
+          Watch the sidebar to see the full execution flow in real-time.
+        </p>
+      </div>
     </div>
   )
 }

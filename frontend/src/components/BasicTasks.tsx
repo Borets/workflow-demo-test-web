@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runSquare, runCube, runGreet, runAddNumbers, runMultiply } from '../services/api'
-import TaskResult from './TaskResult'
-import type { TaskResponse } from '../types'
+import { useTaskRunner } from '../hooks/useTaskRunner'
 
 export default function BasicTasks() {
-  const [result, setResult] = useState<TaskResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { runTask } = useTaskRunner()
 
   // Form states
   const [squareInput, setSquareInput] = useState('5')
@@ -16,19 +13,6 @@ export default function BasicTasks() {
   const [addB, setAddB] = useState('3')
   const [mulA, setMulA] = useState('4')
   const [mulB, setMulB] = useState('7')
-
-  const handleTask = async (taskFn: () => Promise<any>) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await taskFn()
-      setResult(response.data)
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -50,9 +34,12 @@ export default function BasicTasks() {
             placeholder="Enter a number"
           />
           <button
-            onClick={() => handleTask(() => runSquare(parseInt(squareInput)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Square',
+              () => runSquare(parseInt(squareInput)),
+              { a: parseInt(squareInput) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
@@ -72,9 +59,12 @@ export default function BasicTasks() {
             placeholder="Enter a number"
           />
           <button
-            onClick={() => handleTask(() => runCube(parseInt(cubeInput)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Cube',
+              () => runCube(parseInt(cubeInput)),
+              { a: parseInt(cubeInput) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
@@ -94,9 +84,12 @@ export default function BasicTasks() {
             placeholder="Enter a name"
           />
           <button
-            onClick={() => handleTask(() => runGreet(greetInput))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Greet',
+              () => runGreet(greetInput),
+              { name: greetInput }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
@@ -123,9 +116,12 @@ export default function BasicTasks() {
             placeholder="Second number"
           />
           <button
-            onClick={() => handleTask(() => runAddNumbers(parseInt(addA), parseInt(addB)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Add Numbers',
+              () => runAddNumbers(parseInt(addA), parseInt(addB)),
+              { a: parseInt(addA), b: parseInt(addB) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
@@ -152,25 +148,24 @@ export default function BasicTasks() {
             placeholder="Second number"
           />
           <button
-            onClick={() => handleTask(() => runMultiply(parseInt(mulA), parseInt(mulB)))}
-            disabled={loading}
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            onClick={() => runTask(
+              'Multiply',
+              () => runMultiply(parseInt(mulA), parseInt(mulB)),
+              { a: parseInt(mulA), b: parseInt(mulB) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
             Run Task
           </button>
         </div>
       </div>
 
-      {/* Loading indicator */}
-      {loading && (
-        <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="mt-2 text-gray-600">Running task...</p>
-        </div>
-      )}
-
-      {/* Results */}
-      <TaskResult result={result} error={error} />
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-800">
+          ℹ️ Tasks now run concurrently! Click multiple "Run Task" buttons to execute them simultaneously.
+          View all task executions in the sidebar on the right.
+        </p>
+      </div>
     </div>
   )
 }
