@@ -5,10 +5,10 @@ Endpoints for OpenAI integration examples.
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from render_sdk.client import Client
-from render_sdk.client.errors import RenderError
 import os
 
 from ..models import TaskResponse
+from .utils import handle_sdk_error
 
 router = APIRouter()
 
@@ -43,8 +43,8 @@ async def analyze_sentiment(data: dict[str, Any]):
             message=f"Sentiment analysis completed",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/translate", response_model=TaskResponse)
 async def translate(data: dict[str, Any]):
@@ -65,8 +65,8 @@ async def translate(data: dict[str, Any]):
             message=f"Translation completed",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/summarize", response_model=TaskResponse)
 async def summarize(data: dict[str, Any]):
@@ -87,5 +87,5 @@ async def summarize(data: dict[str, Any]):
             message=f"Summarization completed",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)

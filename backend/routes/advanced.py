@@ -5,10 +5,10 @@ Endpoints for advanced workflow examples.
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from render_sdk.client import Client
-from render_sdk.client.errors import RenderError
 import os
 
 from ..models import TaskResponse
+from .utils import handle_sdk_error
 
 router = APIRouter()
 
@@ -51,8 +51,8 @@ async def process_document(data: dict[str, Any]):
             message=f"Document pipeline completed",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/parallel_sentiment", response_model=TaskResponse)
 async def parallel_sentiment(data: dict[str, Any]):
@@ -79,8 +79,8 @@ async def parallel_sentiment(data: dict[str, Any]):
             message=f"Parallel sentiment analysis completed",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/multi_language_summary", response_model=TaskResponse)
 async def multi_language_summary(data: dict[str, Any]):
@@ -111,5 +111,5 @@ async def multi_language_summary(data: dict[str, Any]):
             message=f"Multi-language summary completed",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)

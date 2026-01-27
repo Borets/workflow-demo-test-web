@@ -5,10 +5,10 @@ Endpoints for parallel execution examples.
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from render_sdk.client import Client
-from render_sdk.client.errors import RenderError
 import os
 
 from ..models import TaskResponse
+from .utils import handle_sdk_error
 
 router = APIRouter()
 
@@ -48,8 +48,8 @@ async def compute_multiple(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/sum_of_squares", response_model=TaskResponse)
 async def sum_of_squares(data: dict[str, Any]):
@@ -74,5 +74,5 @@ async def sum_of_squares(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)

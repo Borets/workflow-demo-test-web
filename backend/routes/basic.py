@@ -5,10 +5,10 @@ Endpoints for basic task examples.
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from render_sdk.client import Client
-from render_sdk.client.errors import RenderError
 import os
 
 from ..models import TaskResponse
+from .utils import handle_sdk_error
 
 router = APIRouter()
 
@@ -23,6 +23,7 @@ def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""
     service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "slav-workflow-demo-test-workflow-service")
     return f"{service_slug}/{task}"
+
 
 @router.post("/square", response_model=TaskResponse)
 async def square(data: dict[str, Any]):
@@ -43,8 +44,8 @@ async def square(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/cube", response_model=TaskResponse)
 async def cube(data: dict[str, Any]):
@@ -65,8 +66,8 @@ async def cube(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/greet", response_model=TaskResponse)
 async def greet(data: dict[str, Any]):
@@ -87,8 +88,8 @@ async def greet(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/add_numbers", response_model=TaskResponse)
 async def add_numbers(data: dict[str, Any]):
@@ -109,8 +110,8 @@ async def add_numbers(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/multiply", response_model=TaskResponse)
 async def multiply(data: dict[str, Any]):
@@ -131,5 +132,5 @@ async def multiply(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)

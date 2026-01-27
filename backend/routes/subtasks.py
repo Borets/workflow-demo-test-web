@@ -5,10 +5,10 @@ Endpoints for subtask examples.
 from typing import Any
 from fastapi import APIRouter, HTTPException
 from render_sdk.client import Client
-from render_sdk.client.errors import RenderError
 import os
 
 from ..models import TaskResponse
+from .utils import handle_sdk_error
 
 router = APIRouter()
 
@@ -43,8 +43,8 @@ async def add_squares(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
 
 @router.post("/calculate_area", response_model=TaskResponse)
 async def calculate_area(data: dict[str, Any]):
@@ -65,5 +65,5 @@ async def calculate_area(data: dict[str, Any]):
             message=f"Task completed successfully",
             result=result.results
         )
-    except RenderError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise handle_sdk_error(e)
