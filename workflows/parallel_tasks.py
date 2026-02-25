@@ -6,7 +6,7 @@ Shows how to execute multiple tasks concurrently.
 
 import asyncio
 import logging
-from main import app
+from app import app
 from basic_tasks import square, cube
 
 logger = logging.getLogger(__name__)

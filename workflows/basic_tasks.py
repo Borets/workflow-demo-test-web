@@ -9,7 +9,7 @@ These tasks show:
 """
 
 import logging
-from main import app
+from app import app
 from render_sdk import Retry
 
 logger = logging.getLogger(__name__)

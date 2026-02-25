@@ -5,7 +5,7 @@ Demonstrates how tasks can call other tasks using await syntax.
 """
 
 import logging
-from main import app
+from app import app
 from basic_tasks import square, multiply
 
 logger = logging.getLogger(__name__)

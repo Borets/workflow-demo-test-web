@@ -12,7 +12,7 @@ Requirements:
 import json
 import logging
 import os
-from main import app
+from app import app
 from render_sdk import Retry
 
 logger = logging.getLogger(__name__)
