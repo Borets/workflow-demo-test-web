@@ -25,7 +25,6 @@ app = Workflows(
     default_retry=Retry(max_retries=3, wait_duration_ms=1000, backoff_scaling=2.0),
     default_timeout=300,
     default_plan="standard",
-    auto_start=True,
 )
 
 # Import all task modules to register tasks
@@ -37,3 +36,5 @@ import advanced_tasks   # Complex pipelines
 
 logger.info("Starting Render Workflows service...")
 logger.info("Registered modules: basic_tasks, subtasks, parallel_tasks, openai_tasks, advanced_tasks")
+
+app.start()
