@@ -1,27 +1,21 @@
-# Render SDK Examples
+# Render Workflows Demo
 
-A comprehensive, full-stack example application demonstrating the Render Workflows SDK with real-world use cases.
+A full-stack example application demonstrating the Render Workflows SDK (`render-sdk` v0.5.0) with real-world use cases including parallel fan-out/fan-in trees, OpenAI integration, and multi-level subtask composition.
 
-## 🏗️ Architecture
-
-This repository contains three services that work together:
-
-1. **Workflow Worker** (`workflows/`) - Defines and executes workflow tasks
-2. **Backend API** (`backend/`) - FastAPI service to trigger workflows
-3. **Frontend** (`frontend/`) - React UI to interact with workflows
+## Architecture
 
 ```
 ┌─────────────┐
 │   Browser   │
-│  (React UI) │
+│  (React UI) │  Static Site on Render
 └──────┬──────┘
        │ HTTP
        ▼
 ┌─────────────┐
 │   Backend   │
-│  (FastAPI)  │
+│  (FastAPI)  │  Web Service on Render
 └──────┬──────┘
-       │ SDK Client
+       │ RenderAsync SDK client
        ▼
 ┌─────────────┐
 │   Render    │
@@ -32,48 +26,137 @@ This repository contains three services that work together:
        ▼
 ┌─────────────┐
 │  Workflow   │
-│   Worker    │
+│   Worker    │  Workflow Service on Render
 │  (Tasks)    │
 └─────────────┘
 ```
 
-## 🚀 Quick Start
+Three services from a single repo, each with its own **root directory**:
+
+| Service | Type | Root Directory | Start Command |
+|---------|------|----------------|---------------|
+| Workflow Worker | **Workflow** | `workflows` | `render-workflows main:app` |
+| Backend API | **Web Service** | *(repo root)* | `uvicorn backend.main:app --host 0.0.0.0 --port $PORT` |
+| Frontend | **Static Site** | *(repo root)* | *(n/a — publish path `frontend/dist`)* |
+
+## Deploying to Render
+
+### Service 1: Workflow Worker
+
+This is a **Workflow** service type (not a Background Worker).
+
+| Setting | Value |
+|---------|-------|
+| **Type** | Workflow |
+| **Root Directory** | `workflows` |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `render-workflows main:app` |
+| **Plan** | Standard (or higher) |
+
+**Root directory is critical.** The start command `render-workflows main:app` imports `main` as a Python module. If the root directory is not set to `workflows`, the runner will fail with:
+
+```
+Error: Could not import module 'main': No module named 'main'
+```
+
+**Environment variables:**
+- `RENDER_API_KEY` — your Render API key (from Account Settings)
+- `OPENAI_API_KEY` — (optional) required for AI-powered tasks
+
+### Service 2: Backend API
+
+| Setting | Value |
+|---------|-------|
+| **Type** | Web Service |
+| **Runtime** | Python |
+| **Build Command** | `cd backend && pip install -r requirements.txt` |
+| **Start Command** | `uvicorn backend.main:app --host 0.0.0.0 --port $PORT` |
+
+**Environment variables:**
+- `RENDER_API_KEY` — same key as above
+- `WORKFLOW_SERVICE_SLUG` — the slug of your workflow service (visible in the dashboard URL, e.g. `workflow-demo-test-web`). This tells the API which workflow service to route tasks to.
+- `OPENAI_API_KEY` — (optional)
+- `CORS_ORIGINS` — (optional) comma-separated list of additional allowed origins
+
+### Service 3: Frontend
+
+| Setting | Value |
+|---------|-------|
+| **Type** | Static Site |
+| **Build Command** | `cd frontend && npm install && npm run build` |
+| **Publish Directory** | `frontend/dist` |
+
+**Environment variables:**
+- `VITE_API_URL` — URL of your backend service (e.g. `https://workflow-demo-test-web-api.onrender.com`)
+
+## SDK v0.5.0 Migration Notes
+
+This project uses `render-sdk>=0.5.0`. Key changes from earlier versions:
+
+### Python SDK (v0.3.x/v0.4.x to v0.5.0)
+
+1. **`Render()` is now sync.** Use `RenderAsync()` in async code (e.g. FastAPI handlers). Using `await` with the sync client raises `TypeError`.
+
+2. **Double-await is gone.** `run_task()` returns `TaskRunDetails` directly:
+   ```python
+   # Old (v0.4.x)
+   task_run = await client.workflows.run_task(...)
+   result = await task_run
+
+   # New (v0.5.0)
+   result = await client.workflows.run_task(...)
+   ```
+   Use `start_task()` if you need fire-and-forget.
+
+3. **`default_timeout` renamed to `default_timeout_seconds`** in `Workflows()` config.
+
+4. **`RenderSync` removed.** Just use `Render` for sync or `RenderAsync` for async.
+
+5. **SSE streaming changed.** `render.workflows.task_run_events()` uses a plain `for` loop on the sync client (not `async for`).
+
+### TypeScript SDK (v0.1.0 to v0.4.1)
+
+1. Package renamed from `@render/sdk` to `@renderinc/sdk`.
+2. `startTaskServer()` removed — tasks register on definition.
+3. `wait_duration` renamed to `wait_duration_ms` in retry config.
+4. `BlobClient` renamed to `ObjectClient` (`experimental.storage.objects`).
+5. `runTask()` no longer opens SSE immediately.
+6. `taskRunEvents()` and `startTask()` require v0.4.0+.
+
+## Local Development
 
 ### Prerequisites
 
-- **Python 3.10+** - [Download](https://www.python.org/downloads/)
-- **Node.js 18+** - [Download](https://nodejs.org/)
-- **uv** - Install via `pip install uv`
-- **Render Account** - [Sign up](https://render.com/)
+- Python 3.10+
+- Node.js 18+
+- A Render API key
 
-### Local Development
-
-#### 1. Clone and Setup
+### 1. Setup
 
 ```bash
-git clone <your-repo-url>
-cd render-sdk-examples
+git clone https://github.com/Borets/workflow-demo-test-web.git
+cd workflow-demo-test-web
 cp .env.example .env
-# Edit .env and add your API keys
+# Edit .env: set RENDER_API_KEY (and optionally OPENAI_API_KEY)
 ```
 
-#### 2. Run Workflows (Terminal 1)
+### 2. Run Workflow Worker (Terminal 1)
 
 ```bash
 cd workflows
-uv pip install -r requirements.txt
-python main.py
+pip install -r requirements.txt
+render ea tasks dev -- render-workflows main:app
 ```
 
-#### 3. Run Backend (Terminal 2)
+### 3. Run Backend (Terminal 2)
 
 ```bash
 cd backend
-uv pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+pip install -r requirements.txt
+uvicorn backend.main:app --reload --port 8000
 ```
 
-#### 4. Run Frontend (Terminal 3)
+### 4. Run Frontend (Terminal 3)
 
 ```bash
 cd frontend
@@ -81,241 +164,157 @@ npm install
 npm run dev
 ```
 
-#### 5. Open Browser
+Open `http://localhost:5173`.
 
-Navigate to `http://localhost:5173` to see the UI.
-
-## 📚 Examples Overview
+## Examples
 
 ### Basic Tasks
-
-Simple synchronous and asynchronous tasks:
-- **Square** - Compute x²
-- **Cube** - Compute x³ (async)
-- **Greet** - Generate greeting message
-- **Add Numbers** - Addition with retry config
-- **Multiply** - Multiplication
+- **Square** — compute x^2
+- **Cube** — compute x^3 (async)
+- **Greet** — generate greeting message
+- **Add Numbers** — addition with retry config
+- **Multiply** — multiplication
 
 ### Subtasks
-
-Tasks that call other tasks:
-- **Add Squares** - Computes a² + b² by calling square twice
-- **Calculate Area** - Uses multiply subtask for area calculation
+- **Add Squares** — computes a^2 + b^2 by calling `square` twice
+- **Calculate Area** — uses `multiply` subtask for area calculation
 
 ### Parallel Execution
+- **Compute Multiple** — squares and cubes in parallel
+- **Sum of Squares** — parallel computation with aggregation
+- **Deep Parallel Tree** — 10+ levels deep, 100+ subtasks across scatter/gather, cross-reduce, and recursive fan-in phases (see below)
 
-Concurrent task execution with `asyncio.gather()`:
-- **Compute Multiple** - Calculate squares and cubes in parallel
-- **Sum of Squares** - Parallel computation with aggregation
-
-### OpenAI Integration
-
-AI-powered workflows (requires `OPENAI_API_KEY`):
-- **Sentiment Analysis** - Analyze text sentiment
-- **Translation** - Translate to any language
-- **Summarization** - Generate concise summaries
+### OpenAI Integration (requires `OPENAI_API_KEY`)
+- **Sentiment Analysis** — analyze text sentiment via GPT-4
+- **Translation** — translate to any language
+- **Summarization** — generate concise summaries
 
 ### Advanced Workflows
+- **Document Pipeline** — translation -> summarization -> sentiment analysis
+- **Parallel Sentiment** — analyze multiple texts concurrently
+- **Multi-Language Summary** — summaries in multiple languages in parallel
 
-Complex multi-stage pipelines:
-- **Document Pipeline** - Translation → Summarization → Sentiment Analysis
-- **Parallel Sentiment** - Analyze multiple texts concurrently
-- **Multi-Language Summary** - Generate summaries in multiple languages
+### Deep Parallel Tree
 
-## 🛠️ Technology Stack
-
-### Workflows
-- **Language**: Python 3.10+
-- **SDK**: `render_sdk` (official Render Workflows SDK)
-- **AI**: OpenAI GPT-4 (optional)
-
-### Backend
-- **Framework**: FastAPI
-- **Server**: Uvicorn
-- **Client**: Render SDK Client for triggering workflows
-
-### Frontend
-- **Framework**: React 18
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS
-- **HTTP Client**: Axios
-
-## 📦 Project Structure
+The `deep_parallel_tree` task demonstrates a complex fan-out/fan-in pattern:
 
 ```
-render-sdk-examples/
-├── workflows/              # Service 1: Workflow definitions
-│   ├── main.py            # Entry point (calls start())
-│   ├── basic_tasks.py     # Simple task examples
-│   ├── subtasks.py        # Subtask execution examples
-│   ├── parallel_tasks.py  # Parallel execution examples
-│   ├── openai_tasks.py    # OpenAI integration
-│   └── advanced_tasks.py  # Complex pipelines
+L0  deep_parallel_tree        (root orchestrator)
+L1  tree_scatter              (split into N chunks)
+L2  tree_chunk_process ×N     (per-chunk processing)
+L3  tree_square ×N*M          (leaf: square each number)
+L4  tree_cube ×N*M            (leaf: cube each number)
+L5  tree_combine ×N*M         (combine square + cube)
+L6  tree_cross_reduce         (pair values across chunks)
+L7  tree_pair_add ×pairs      (add each pair)
+L8  tree_pair_multiply ×pairs (multiply each pair)
+L9  tree_layered_sum          (start recursive fan-in)
+L10 tree_partial_sum          (halve-and-add recursively)
+L11 tree_partial_sum          (continued recursion)
+L12 tree_finalize             (assemble final result)
+```
+
+With 12 numbers and `chunk_size=4`, this spawns ~120 subtasks across 12+ levels.
+
+**API call:**
+```bash
+curl -X POST https://your-backend.onrender.com/api/parallel/deep_parallel_tree \
+  -H "Content-Type: application/json" \
+  -d '{"numbers": [1,2,3,4,5,6,7,8,9,10,11,12], "chunk_size": 4}'
+```
+
+## Project Structure
+
+```
+workflow-demo-test-web/
+├── workflows/                 # Workflow service (root dir on Render)
+│   ├── app.py                # Workflows instance (shared across modules)
+│   ├── main.py               # Entry point — imports all task modules
+│   ├── basic_tasks.py        # Simple sync/async tasks
+│   ├── subtasks.py           # Tasks calling other tasks
+│   ├── parallel_tasks.py     # Parallel execution + deep tree
+│   ├── openai_tasks.py       # OpenAI/GPT integration
+│   ├── advanced_tasks.py     # Complex multi-stage pipelines
+│   ├── requirements.txt
+│   └── pyproject.toml
 │
-├── backend/               # Service 2: REST API
-│   ├── main.py           # FastAPI app
-│   ├── models.py         # Pydantic schemas
-│   └── routes/           # API endpoints
-│       ├── basic.py      # /api/basic/*
-│       ├── subtasks.py   # /api/subtasks/*
-│       ├── parallel.py   # /api/parallel/*
-│       ├── openai.py     # /api/openai/*
-│       └── advanced.py   # /api/advanced/*
+├── backend/                   # FastAPI API service
+│   ├── main.py               # FastAPI app, CORS, routers
+│   ├── models.py             # Pydantic response schemas
+│   ├── routes/
+│   │   ├── utils.py          # Shared error handling
+│   │   ├── basic.py          # /api/basic/*
+│   │   ├── subtasks.py       # /api/subtasks/*
+│   │   ├── parallel.py       # /api/parallel/*
+│   │   ├── openai.py         # /api/openai/*
+│   │   └── advanced.py       # /api/advanced/*
+│   ├── requirements.txt
+│   └── pyproject.toml
 │
-└── frontend/             # Service 3: React UI
+└── frontend/                  # React static site
     ├── src/
-    │   ├── App.tsx          # Main app with tabs
-    │   ├── components/      # React components
-    │   ├── services/        # API client
-    │   └── types/           # TypeScript types
+    │   ├── App.tsx
+    │   ├── components/        # Tab components per category
+    │   ├── hooks/             # useTaskRunner hook
+    │   ├── services/api.ts    # Axios API client
+    │   └── types/
     └── package.json
 ```
 
-## 🌐 Deployment to Render
+## Environment Variables
 
-### Service 1: Workflow Worker (Background Worker)
+| Variable | Required | Used By | Description |
+|----------|----------|---------|-------------|
+| `RENDER_API_KEY` | Yes | Backend, Workflows | Render API key from Account Settings |
+| `WORKFLOW_SERVICE_SLUG` | Yes | Backend | Slug of your workflow service (e.g. `workflow-demo-test-web`) |
+| `OPENAI_API_KEY` | No | Workflows | Required only for OpenAI/AI tasks |
+| `VITE_API_URL` | Yes | Frontend | Backend service URL |
+| `CORS_ORIGINS` | No | Backend | Additional allowed CORS origins (comma-separated) |
 
-- **Name**: `render-sdk-workflows`
-- **Type**: Background Worker
-- **Build Command**: `cd workflows && pip install -r requirements.txt`
-- **Start Command**: `python -m workflows.main`
-- **Environment Variables**:
-  - `RENDER_API_KEY` (from Render dashboard)
-  - `OPENAI_API_KEY` (optional)
-
-### Service 2: Backend API (Web Service)
-
-- **Name**: `render-sdk-backend`
-- **Type**: Web Service
-- **Build Command**: `cd backend && pip install -r requirements.txt`
-- **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-- **Environment Variables**:
-  - `RENDER_API_KEY`
-  - `OPENAI_API_KEY` (optional)
-
-### Service 3: Frontend (Static Site)
-
-- **Name**: `render-sdk-frontend`
-- **Type**: Static Site
-- **Build Command**: `cd frontend && npm install && npm run build`
-- **Publish Directory**: `frontend/dist`
-- **Environment Variables**:
-  - `VITE_API_URL` (URL of your backend service)
-
-## 🧪 Testing
-
-### Test Backend API
+## Testing
 
 ```bash
 # Health check
 curl http://localhost:8000/health
 
-# Test square task
+# Basic task
 curl -X POST http://localhost:8000/api/basic/square \
   -H "Content-Type: application/json" \
   -d '{"a": 5}'
 
-# Test greet task
-curl -X POST http://localhost:8000/api/basic/greet \
+# Deep parallel tree
+curl -X POST http://localhost:8000/api/parallel/deep_parallel_tree \
   -H "Content-Type: application/json" \
-  -d '{"name": "Alice"}'
+  -d '{"numbers": [1,2,3,4,5,6,7,8,9,10,11,12]}'
 ```
 
-### Test Frontend
+API docs available at `/docs` (Swagger) and `/redoc` when backend is running.
 
-1. Open `http://localhost:5173`
-2. Navigate through tabs (Basic, Subtasks, Parallel, OpenAI, Advanced)
-3. Fill in form inputs and click "Run Task"
-4. View results in the result panel
+## Troubleshooting
 
-## 📖 API Documentation
+### "No module named 'main'" on workflow service
+The **Root Directory** on Render must be set to `workflows`. Without this, `render-workflows main:app` can't find `main.py`.
 
-Once the backend is running, visit:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
-
-## 🔑 Environment Variables
-
-### Required
-
-- `RENDER_API_KEY` - Your Render API key (get from Render dashboard)
-- `WORKFLOW_SERVICE_SLUG` - Your workflow service slug (e.g., `slav-workflow-demo-test-workflow-service`)
-
-### Optional
-
-- `OPENAI_API_KEY` - OpenAI API key (required for AI examples)
-- `VITE_API_URL` - Backend URL for frontend (default: `http://localhost:8000`)
-
-## 🎯 Use Cases
-
-### Simple Tasks
-Perfect for learning the basics of Render Workflows:
-- Function decoration with `@task`
-- Sync vs async tasks
-- Retry configuration
-
-### Subtask Composition
-Build complex workflows by composing simple tasks:
-- Use `await` to call other tasks
-- Pass data between tasks
-- Create reusable task libraries
-
-### Parallel Execution
-Improve performance with concurrent execution:
-- Use `asyncio.gather()` for parallel subtasks
-- Process multiple items simultaneously
-- Aggregate results from parallel operations
-
-### AI Integration
-Leverage LLMs in your workflows:
-- Sentiment analysis
-- Translation services
-- Text summarization
-- Custom AI-powered pipelines
-
-## 🤝 Contributing
-
-Contributions are welcome! To add new examples:
-
-1. Add task to appropriate file in `workflows/`
-2. Add API endpoint in `backend/routes/`
-3. Add UI component in `frontend/src/components/`
-4. Update this README with the new example
-
-## 📝 License
-
-MIT License - See LICENSE file for details
-
-## 🔗 Resources
-
-- [Render Workflows Documentation](https://docs.render.com/workflows)
-- [Render SDK on PyPI](https://pypi.org/project/render_sdk/)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [React Documentation](https://react.dev/)
-- [Vite Documentation](https://vitejs.dev/)
-
-## 💡 Tips
-
-- **Local Development**: Use the workflow worker only when testing the full flow. For API development, you can mock responses.
-- **OpenAI Costs**: Be mindful of OpenAI API costs when running AI examples frequently.
-- **Debugging**: Check backend logs for workflow execution details and errors.
-- **Performance**: Parallel tasks significantly speed up workflows with multiple independent operations.
-
-## 🐛 Troubleshooting
+### "TypeError: object TaskRunDetails can't be used in 'await' expression"
+You're using the sync `Render()` client with `await`. Switch to `RenderAsync()` for async code (SDK v0.5.0 change).
 
 ### "RENDER_API_KEY not configured"
-Set the environment variable in your `.env` file or Render dashboard.
+Set the environment variable in your `.env` file or in the Render dashboard under Environment.
 
 ### OpenAI tasks failing
 Ensure `OPENAI_API_KEY` is set and your account has available credits.
 
 ### CORS errors in frontend
-Check that `VITE_API_URL` points to the correct backend URL and CORS is enabled.
+Check that `VITE_API_URL` points to the correct backend URL. You can also add origins via the `CORS_ORIGINS` env var.
 
-### Frontend can't connect to backend
-Verify backend is running and accessible at the URL specified in `VITE_API_URL`.
+### Tasks not registering / empty task list
+Verify the workflow service root directory is `workflows` and the start command is `render-workflows main:app`. Check deploy logs for import errors.
 
----
+### Workflow service slug mismatch
+The `WORKFLOW_SERVICE_SLUG` env var on the backend must match the slug shown in your workflow service's Render dashboard URL. If not set, it defaults to `workflow-demo-test-web`.
 
-**Built with ❤️ using Render Workflows**
+## Resources
+
+- [Render Workflows Documentation](https://docs.render.com/workflows)
+- [Render SDK on PyPI](https://pypi.org/project/render_sdk/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
