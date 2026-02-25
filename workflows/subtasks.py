@@ -5,12 +5,12 @@ Demonstrates how tasks can call other tasks using await syntax.
 """
 
 import logging
-from render_sdk.workflows import task
+from main import app
 from basic_tasks import square, multiply
 
 logger = logging.getLogger(__name__)
 
-@task
+@app.task
 async def add_squares(a: int, b: int) -> int:
     """
     Add the squares of two numbers by calling the square task twice.
@@ -30,7 +30,7 @@ async def add_squares(a: int, b: int) -> int:
     logger.info(f"Total: {total}")
     return total
 
-@task
+@app.task
 async def calculate_area(length: int, width: int) -> dict:
     """
     Calculate area and perimeter using subtasks.

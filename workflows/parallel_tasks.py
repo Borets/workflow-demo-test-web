@@ -6,12 +6,12 @@ Shows how to execute multiple tasks concurrently.
 
 import asyncio
 import logging
-from render_sdk.workflows import task
+from main import app
 from basic_tasks import square, cube
 
 logger = logging.getLogger(__name__)
 
-@task
+@app.task
 async def compute_multiple(numbers: list[int]) -> dict:
     """
     Compute squares and cubes for multiple numbers in parallel.
@@ -41,7 +41,7 @@ async def compute_multiple(numbers: list[int]) -> dict:
         "count": len(numbers)
     }
 
-@task
+@app.task
 async def sum_of_squares(numbers: list[int]) -> dict:
     """
     Calculate the sum of squares for a list of numbers in parallel.

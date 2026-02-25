@@ -10,12 +10,12 @@ These tasks show:
 
 import asyncio
 import logging
-from render_sdk.workflows import task
+from main import app
 from openai_tasks import analyze_text_sentiment, translate_text, summarize_text
 
 logger = logging.getLogger(__name__)
 
-@task
+@app.task
 async def process_document_pipeline(document: str, translate_to: str = None) -> dict:
     """
     Complex document processing pipeline with multiple levels of subtasks.
@@ -68,7 +68,7 @@ async def process_document_pipeline(document: str, translate_to: str = None) -> 
     return results
 
 
-@task
+@app.task
 async def parallel_sentiment_analysis(texts: list[str]) -> dict:
     """
     Analyze multiple text snippets in parallel using concurrent subtask execution.
@@ -110,7 +110,7 @@ async def parallel_sentiment_analysis(texts: list[str]) -> dict:
     }
 
 
-@task
+@app.task
 async def multi_language_summary(text: str, languages: list[str]) -> dict:
     """
     Generate summaries in multiple languages in parallel.

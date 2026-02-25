@@ -4,7 +4,7 @@ Endpoints for parallel execution examples.
 
 from typing import Any
 from fastapi import APIRouter, HTTPException
-from render_sdk.client import Client
+from render_sdk import Render
 import os
 
 from ..models import TaskResponse
@@ -12,12 +12,9 @@ from .utils import handle_sdk_error
 
 router = APIRouter()
 
-def get_client() -> Client:
+def get_client() -> Render:
     """Get Render API client."""
-    api_key = os.getenv("RENDER_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="RENDER_API_KEY not configured")
-    return Client(api_key)
+    return Render()
 
 def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""

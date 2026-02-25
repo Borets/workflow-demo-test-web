@@ -9,38 +9,39 @@ These tasks show:
 """
 
 import logging
-from render_sdk.workflows import task, Options, Retry
+from main import app
+from render_sdk import Retry
 
 logger = logging.getLogger(__name__)
 
-@task
+@app.task
 def square(a: int) -> int:
     """Synchronous task: Square a number."""
     logger.info(f"Computing square of {a}")
     return a * a
 
-@task
+@app.task
 async def cube(a: int) -> int:
     """Async task: Cube a number."""
     logger.info(f"Computing cube of {a}")
     return a * a * a
 
-@task(
+@app.task(
     name="add_with_retry",
-    options=Options(retry=Retry(max_retries=3, wait_duration_ms=1000))
+    retry=Retry(max_retries=3, wait_duration_ms=1000)
 )
 def add_numbers(a: int, b: int) -> int:
     """Add two numbers with retry configuration."""
     logger.info(f"Adding {a} + {b}")
     return a + b
 
-@task
+@app.task
 def greet(name: str) -> str:
     """Simple greeting task."""
     logger.info(f"Greeting {name}")
     return f"Hello, {name}! Welcome to Render Workflows."
 
-@task
+@app.task
 def multiply(a: int, b: int) -> int:
     """Multiply two numbers."""
     logger.info(f"Multiplying {a} * {b}")

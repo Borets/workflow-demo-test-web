@@ -12,7 +12,8 @@ Requirements:
 import json
 import logging
 import os
-from render_sdk.workflows import task, Options, Retry
+from main import app
+from render_sdk import Retry
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ def get_openai_client():
     return _openai_client
 
 
-@task(options=Options(retry=Retry(max_retries=3, wait_duration_ms=2000, factor=2.0)))
+@app.task(retry=Retry(max_retries=3, wait_duration_ms=2000, backoff_scaling=2.0))
 async def analyze_text_sentiment(text: str) -> dict:
     """
     Analyze text sentiment using OpenAI GPT.
@@ -108,7 +109,7 @@ async def analyze_text_sentiment(text: str) -> dict:
         raise
 
 
-@task(options=Options(retry=Retry(max_retries=3, wait_duration_ms=2000, factor=2.0)))
+@app.task(retry=Retry(max_retries=3, wait_duration_ms=2000, backoff_scaling=2.0))
 async def translate_text(text: str, target_language: str) -> str:
     """
     Translate text to a target language using OpenAI GPT.
@@ -153,7 +154,7 @@ async def translate_text(text: str, target_language: str) -> str:
         raise
 
 
-@task(options=Options(retry=Retry(max_retries=3, wait_duration_ms=2000, factor=2.0)))
+@app.task(retry=Retry(max_retries=3, wait_duration_ms=2000, backoff_scaling=2.0))
 async def summarize_text(text: str, max_sentences: int = 3) -> str:
     """
     Summarize text using OpenAI GPT.
