@@ -6,6 +6,11 @@ The app registers all tasks with Render and executes them when triggered.
 """
 
 import logging
+import os
+import sys
+
+# Ensure sibling modules are importable when run as `python -m workflows.main`
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from render_sdk import Retry, Workflows
 
