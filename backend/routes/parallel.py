@@ -73,3 +73,29 @@ async def sum_of_squares(data: dict[str, Any]):
         )
     except Exception as e:
         raise handle_sdk_error(e)
+
+@router.post("/deep_parallel_tree", response_model=TaskResponse)
+async def deep_parallel_tree(data: dict[str, Any]):
+    """
+    Execute the deep_parallel_tree task – a 10+ level deep, 100+ subtask
+    parallel tree that fans out and reduces across multiple phases.
+
+    Input: {"numbers": [1,2,3,4,5,6,7,8,9,10,11,12], "chunk_size": 4}
+    (chunk_size is optional, defaults to 4)
+    """
+    client = get_client()
+    try:
+        args = [data["numbers"]]
+        if "chunk_size" in data:
+            args.append(data["chunk_size"])
+        task_run = await client.workflows.run_task(get_task_name("deep_parallel_tree"), args)
+        result = await task_run
+
+        return TaskResponse(
+            task_run_id=result.id,
+            status=result.status,
+            message=f"Task completed successfully",
+            result=result.results
+        )
+    except Exception as e:
+        raise handle_sdk_error(e)
