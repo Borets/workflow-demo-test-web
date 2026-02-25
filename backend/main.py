@@ -31,6 +31,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://slav-workflow-demo-test-web.onrender-staging.com",
     "https://slav-workflow-demo-web.onrender.com",
+    "https://workflow-demo-test-web.onrender.com",
 ]
 
 # Add any origins from environment variable
