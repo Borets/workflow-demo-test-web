@@ -18,7 +18,7 @@ def get_client() -> Render:
 
 def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""
-    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "slav-workflow-demo-test-workflow-service")
+    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "workflow-demo-test-web")
     return f"{service_slug}/{task}"
 
 @router.post("/add_squares", response_model=TaskResponse)
