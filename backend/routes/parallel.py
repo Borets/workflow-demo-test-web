@@ -4,7 +4,7 @@ Endpoints for parallel execution examples.
 
 from typing import Any
 from fastapi import APIRouter, HTTPException
-from render_sdk import Render
+from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
@@ -12,9 +12,9 @@ from .utils import handle_sdk_error
 
 router = APIRouter()
 
-def get_client() -> Render:
-    """Get Render API client."""
-    return Render()
+def get_client() -> RenderAsync:
+    """Get Render async API client."""
+    return RenderAsync()
 
 def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""
@@ -36,8 +36,7 @@ async def compute_multiple(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("compute_multiple"), [data["numbers"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("compute_multiple"), [data["numbers"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -62,8 +61,7 @@ async def sum_of_squares(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("sum_of_squares"), [data["numbers"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("sum_of_squares"), [data["numbers"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -88,8 +86,7 @@ async def deep_parallel_tree(data: dict[str, Any]):
         args = [data["numbers"]]
         if "chunk_size" in data:
             args.append(data["chunk_size"])
-        task_run = await client.workflows.run_task(get_task_name("deep_parallel_tree"), args)
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("deep_parallel_tree"), args)
 
         return TaskResponse(
             task_run_id=result.id,

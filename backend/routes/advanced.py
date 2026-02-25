@@ -4,7 +4,7 @@ Endpoints for advanced workflow examples.
 
 from typing import Any
 from fastapi import APIRouter, HTTPException
-from render_sdk import Render
+from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
@@ -12,9 +12,9 @@ from .utils import handle_sdk_error
 
 router = APIRouter()
 
-def get_client() -> Render:
-    """Get Render API client."""
-    return Render()
+def get_client() -> RenderAsync:
+    """Get Render async API client."""
+    return RenderAsync()
 
 def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""
@@ -39,8 +39,7 @@ async def process_document(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("process_document_pipeline"), [data["document"], data.get("translate_to")])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("process_document_pipeline"), [data["document"], data.get("translate_to")])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -67,8 +66,7 @@ async def parallel_sentiment(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("parallel_sentiment_analysis"), [data["texts"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("parallel_sentiment_analysis"), [data["texts"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -99,8 +97,7 @@ async def multi_language_summary(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("multi_language_summary"), [data["text"], data["languages"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("multi_language_summary"), [data["text"], data["languages"]])
 
         return TaskResponse(
             task_run_id=result.id,

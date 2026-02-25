@@ -4,7 +4,7 @@ Endpoints for subtask examples.
 
 from typing import Any
 from fastapi import APIRouter, HTTPException
-from render_sdk import Render
+from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
@@ -12,9 +12,9 @@ from .utils import handle_sdk_error
 
 router = APIRouter()
 
-def get_client() -> Render:
-    """Get Render API client."""
-    return Render()
+def get_client() -> RenderAsync:
+    """Get Render async API client."""
+    return RenderAsync()
 
 def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""
@@ -31,8 +31,7 @@ async def add_squares(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("add_squares"), [data["a"], data["b"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("add_squares"), [data["a"], data["b"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -53,8 +52,7 @@ async def calculate_area(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("calculate_area"), [data["length"], data["width"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("calculate_area"), [data["length"], data["width"]])
 
         return TaskResponse(
             task_run_id=result.id,

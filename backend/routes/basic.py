@@ -4,7 +4,7 @@ Endpoints for basic task examples.
 
 from typing import Any
 from fastapi import APIRouter, HTTPException
-from render_sdk import Render
+from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
@@ -12,9 +12,9 @@ from .utils import handle_sdk_error
 
 router = APIRouter()
 
-def get_client() -> Render:
-    """Get Render API client."""
-    return Render()
+def get_client() -> RenderAsync:
+    """Get Render async API client."""
+    return RenderAsync()
 
 def get_task_name(task: str) -> str:
     """Get full task name with service slug if configured."""
@@ -32,8 +32,7 @@ async def square(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("square"), [data["a"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("square"), [data["a"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -54,8 +53,7 @@ async def cube(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("cube"), [data["a"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("cube"), [data["a"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -76,8 +74,7 @@ async def greet(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("greet"), [data["name"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("greet"), [data["name"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -98,8 +95,7 @@ async def add_numbers(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("add_with_retry"), [data["a"], data["b"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("add_with_retry"), [data["a"], data["b"]])
 
         return TaskResponse(
             task_run_id=result.id,
@@ -120,8 +116,7 @@ async def multiply(data: dict[str, Any]):
     """
     client = get_client()
     try:
-        task_run = await client.workflows.run_task(get_task_name("multiply"), [data["a"], data["b"]])
-        result = await task_run
+        result = await client.workflows.run_task(get_task_name("multiply"), [data["a"], data["b"]])
 
         return TaskResponse(
             task_run_id=result.id,
