@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error
+from .utils import handle_sdk_error, get_workflow_id
 
 router = APIRouter()
 
@@ -33,9 +33,11 @@ async def square(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("square"), [data["a"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -54,9 +56,11 @@ async def cube(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("cube"), [data["a"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -75,9 +79,11 @@ async def greet(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("greet"), [data["name"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -96,9 +102,11 @@ async def add_numbers(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("add_with_retry"), [data["a"], data["b"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -117,9 +125,11 @@ async def multiply(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("multiply"), [data["a"], data["b"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results

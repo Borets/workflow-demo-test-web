@@ -25,7 +25,18 @@ export default function TaskResult({ result, error }: TaskResultProps) {
       <div className="space-y-2">
         <div>
           <span className="font-medium">Task Run ID:</span>{' '}
-          <span className="font-mono text-sm">{result.task_run_id}</span>
+          {result.workflow_id ? (
+            <a
+              href={`https://dashboard.render.com/wf/${result.workflow_id}/runs/${result.task_run_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              {result.task_run_id}
+            </a>
+          ) : (
+            <span className="font-mono text-sm">{result.task_run_id}</span>
+          )}
         </div>
         <div>
           <span className="font-medium">Status:</span>{' '}

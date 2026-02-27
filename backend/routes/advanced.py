@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error
+from .utils import handle_sdk_error, get_workflow_id
 
 router = APIRouter()
 
@@ -40,9 +40,11 @@ async def process_document(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("process_document_pipeline"), [data["document"], data.get("translate_to")])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Document pipeline completed",
             result=result.results
@@ -67,9 +69,11 @@ async def parallel_sentiment(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("parallel_sentiment_analysis"), [data["texts"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Parallel sentiment analysis completed",
             result=result.results
@@ -98,9 +102,11 @@ async def multi_language_summary(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("multi_language_summary"), [data["text"], data["languages"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Multi-language summary completed",
             result=result.results

@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error
+from .utils import handle_sdk_error, get_workflow_id
 
 router = APIRouter()
 
@@ -32,9 +32,11 @@ async def add_squares(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("add_squares"), [data["a"], data["b"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -53,9 +55,11 @@ async def calculate_area(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("calculate_area"), [data["length"], data["width"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results

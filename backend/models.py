@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class TaskResponse(BaseModel):
     """Task execution response."""
     task_run_id: str = Field(..., description="Unique task run identifier")
+    workflow_id: Optional[str] = Field(None, description="Workflow ID for dashboard URL")
     status: str = Field(..., description="Current task status")
     message: str = Field(..., description="Human-readable message")
     result: Optional[Any] = Field(None, description="Task result if completed")

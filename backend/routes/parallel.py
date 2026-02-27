@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error
+from .utils import handle_sdk_error, get_workflow_id
 
 router = APIRouter()
 
@@ -38,8 +38,10 @@ async def compute_multiple(data: dict[str, Any]):
     try:
         result = await client.workflows.run_task(get_task_name("compute_multiple"), [data["numbers"]])
 
+        wf_id = await get_workflow_id(client)
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -63,8 +65,10 @@ async def sum_of_squares(data: dict[str, Any]):
     try:
         result = await client.workflows.run_task(get_task_name("sum_of_squares"), [data["numbers"]])
 
+        wf_id = await get_workflow_id(client)
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results
@@ -88,8 +92,10 @@ async def deep_parallel_tree(data: dict[str, Any]):
             args.append(data["chunk_size"])
         result = await client.workflows.run_task(get_task_name("deep_parallel_tree"), args)
 
+        wf_id = await get_workflow_id(client)
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Task completed successfully",
             result=result.results

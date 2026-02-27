@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error
+from .utils import handle_sdk_error, get_workflow_id
 
 router = APIRouter()
 
@@ -32,9 +32,11 @@ async def analyze_sentiment(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("analyze_text_sentiment"), [data["text"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Sentiment analysis completed",
             result=result.results
@@ -53,9 +55,11 @@ async def translate(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("translate_text"), [data["text"], data["target_language"]])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Translation completed",
             result=result.results
@@ -74,9 +78,11 @@ async def summarize(data: dict[str, Any]):
     client = get_client()
     try:
         result = await client.workflows.run_task(get_task_name("summarize_text"), [data["text"], data.get("max_sentences", 3)])
+        wf_id = await get_workflow_id(client)
 
         return TaskResponse(
             task_run_id=result.id,
+            workflow_id=wf_id,
             status=result.status,
             message=f"Summarization completed",
             result=result.results
