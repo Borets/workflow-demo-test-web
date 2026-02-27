@@ -17,7 +17,7 @@ interface TaskExecutionContextType {
   addTask: (name: string, inputs?: Record<string, any>) => string
   updateTask: (id: string, update: Partial<TaskExecution>) => void
   completeTask: (id: string, result: TaskResponse) => void
-  failTask: (id: string, error: string) => void
+  failTask: (id: string, error: string, result?: TaskResponse) => void
   clearTasks: () => void
 }
 
@@ -53,11 +53,12 @@ export function TaskExecutionProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const failTask = (id: string, error: string) => {
+  const failTask = (id: string, error: string, result?: TaskResponse) => {
     updateTask(id, {
       status: 'error',
       endTime: new Date(),
       error,
+      result,
     })
   }
 

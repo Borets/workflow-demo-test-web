@@ -131,10 +131,9 @@ export default function TaskSidebar() {
                 </div>
               )}
 
-              {/* Task Run ID */}
+              {/* Task Run ID / Dashboard Link */}
               {task.result?.task_run_id && (
                 <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
-                  <span className="text-gray-500">ID:</span>{' '}
                   {task.result.workflow_id ? (
                     <a
                       href={`https://dashboard.render.com/wf/${task.result.workflow_id}/runs/${task.result.task_run_id}`}
@@ -142,12 +141,15 @@ export default function TaskSidebar() {
                       rel="noopener noreferrer"
                       className="font-mono text-blue-600 hover:text-blue-800 underline"
                     >
-                      {task.result.task_run_id.substring(0, 12)}...
+                      View on Dashboard
                     </a>
                   ) : (
-                    <span className="font-mono text-gray-700">
-                      {task.result.task_run_id.substring(0, 12)}...
-                    </span>
+                    <>
+                      <span className="text-gray-500">ID:</span>{' '}
+                      <span className="font-mono text-gray-700">
+                        {task.result.task_run_id.substring(0, 12)}...
+                      </span>
+                    </>
                   )}
                 </div>
               )}

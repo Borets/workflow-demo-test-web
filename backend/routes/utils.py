@@ -36,6 +36,41 @@ async def get_workflow_id(client: RenderAsync) -> str | None:
     return None
 
 
+async def run_task_and_respond(
+    client: RenderAsync,
+    task_name: str,
+    args: list,
+    message: str = "Task completed successfully",
+) -> "TaskResponse":
+    from ..models import TaskResponse
+
+    result = None
+    try:
+        result = await client.workflows.run_task(task_name, args)
+        wf_id = await get_workflow_id(client)
+        return TaskResponse(
+            task_run_id=result.id,
+            workflow_id=wf_id,
+            status=result.status,
+            message=message,
+            result=result.results,
+        )
+    except Exception as e:
+        if result is not None:
+            wf_id = None
+            try:
+                wf_id = await get_workflow_id(client)
+            except Exception:
+                pass
+            return TaskResponse(
+                task_run_id=result.id,
+                workflow_id=wf_id,
+                status="failed",
+                message=str(e),
+            )
+        raise handle_sdk_error(e)
+
+
 def handle_sdk_error(e: Exception) -> HTTPException:
     """Handle SDK errors including the streaming response bug.
     

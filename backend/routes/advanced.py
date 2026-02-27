@@ -3,12 +3,12 @@ Endpoints for advanced workflow examples.
 """
 
 from typing import Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error, get_workflow_id
+from .utils import run_task_and_respond
 
 router = APIRouter()
 
@@ -37,20 +37,11 @@ async def process_document(data: dict[str, Any]):
         "sentiment_analysis": {...}
     }
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("process_document_pipeline"), [data["document"], data.get("translate_to")])
-        wf_id = await get_workflow_id(client)
-
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Document pipeline completed",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(
+        get_client(), get_task_name("process_document_pipeline"),
+        [data["document"], data.get("translate_to")],
+        message="Document pipeline completed",
+    )
 
 @router.post("/parallel_sentiment", response_model=TaskResponse)
 async def parallel_sentiment(data: dict[str, Any]):
@@ -66,20 +57,10 @@ async def parallel_sentiment(data: dict[str, Any]):
         "total": 3
     }
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("parallel_sentiment_analysis"), [data["texts"]])
-        wf_id = await get_workflow_id(client)
-
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Parallel sentiment analysis completed",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(
+        get_client(), get_task_name("parallel_sentiment_analysis"), [data["texts"]],
+        message="Parallel sentiment analysis completed",
+    )
 
 @router.post("/multi_language_summary", response_model=TaskResponse)
 async def multi_language_summary(data: dict[str, Any]):
@@ -99,17 +80,8 @@ async def multi_language_summary(data: dict[str, Any]):
         }
     }
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("multi_language_summary"), [data["text"], data["languages"]])
-        wf_id = await get_workflow_id(client)
-
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Multi-language summary completed",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(
+        get_client(), get_task_name("multi_language_summary"),
+        [data["text"], data["languages"]],
+        message="Multi-language summary completed",
+    )

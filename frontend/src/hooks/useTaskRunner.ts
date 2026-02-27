@@ -11,7 +11,12 @@ export function useTaskRunner() {
     const taskId = addTask(taskName, inputs)
     try {
       const response = await taskFn()
-      completeTask(taskId, response.data)
+      const data = response.data
+      if (data.status === 'failed') {
+        failTask(taskId, data.message || 'Task failed', data)
+      } else {
+        completeTask(taskId, data)
+      }
     } catch (err: any) {
       failTask(taskId, err.response?.data?.detail || err.message)
     }
@@ -19,4 +24,3 @@ export function useTaskRunner() {
 
   return { runTask }
 }
-

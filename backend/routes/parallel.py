@@ -3,12 +3,12 @@ Endpoints for parallel execution examples.
 """
 
 from typing import Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error, get_workflow_id
+from .utils import run_task_and_respond
 
 router = APIRouter()
 
@@ -34,20 +34,7 @@ async def compute_multiple(data: dict[str, Any]):
         "count": 3
     }
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("compute_multiple"), [data["numbers"]])
-
-        wf_id = await get_workflow_id(client)
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Task completed successfully",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(get_client(), get_task_name("compute_multiple"), [data["numbers"]])
 
 @router.post("/sum_of_squares", response_model=TaskResponse)
 async def sum_of_squares(data: dict[str, Any]):
@@ -61,20 +48,7 @@ async def sum_of_squares(data: dict[str, Any]):
         "sum": 30
     }
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("sum_of_squares"), [data["numbers"]])
-
-        wf_id = await get_workflow_id(client)
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Task completed successfully",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(get_client(), get_task_name("sum_of_squares"), [data["numbers"]])
 
 @router.post("/deep_parallel_tree", response_model=TaskResponse)
 async def deep_parallel_tree(data: dict[str, Any]):
@@ -85,20 +59,7 @@ async def deep_parallel_tree(data: dict[str, Any]):
     Input: {"numbers": [1,2,3,4,5,6,7,8,9,10,11,12], "chunk_size": 4}
     (chunk_size is optional, defaults to 4)
     """
-    client = get_client()
-    try:
-        args = [data["numbers"]]
-        if "chunk_size" in data:
-            args.append(data["chunk_size"])
-        result = await client.workflows.run_task(get_task_name("deep_parallel_tree"), args)
-
-        wf_id = await get_workflow_id(client)
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Task completed successfully",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    args = [data["numbers"]]
+    if "chunk_size" in data:
+        args.append(data["chunk_size"])
+    return await run_task_and_respond(get_client(), get_task_name("deep_parallel_tree"), args)

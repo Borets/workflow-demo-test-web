@@ -3,12 +3,12 @@ Endpoints for subtask examples.
 """
 
 from typing import Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import handle_sdk_error, get_workflow_id
+from .utils import run_task_and_respond
 
 router = APIRouter()
 
@@ -29,20 +29,7 @@ async def add_squares(data: dict[str, Any]):
     Input: {"a": 3, "b": 4}
     Output: 25 (9 + 16)
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("add_squares"), [data["a"], data["b"]])
-        wf_id = await get_workflow_id(client)
-
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Task completed successfully",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(get_client(), get_task_name("add_squares"), [data["a"], data["b"]])
 
 @router.post("/calculate_area", response_model=TaskResponse)
 async def calculate_area(data: dict[str, Any]):
@@ -52,17 +39,4 @@ async def calculate_area(data: dict[str, Any]):
     Input: {"length": 5, "width": 3}
     Output: {"area": 15, "perimeter": 16, "dimensions": {"length": 5, "width": 3}}
     """
-    client = get_client()
-    try:
-        result = await client.workflows.run_task(get_task_name("calculate_area"), [data["length"], data["width"]])
-        wf_id = await get_workflow_id(client)
-
-        return TaskResponse(
-            task_run_id=result.id,
-            workflow_id=wf_id,
-            status=result.status,
-            message=f"Task completed successfully",
-            result=result.results
-        )
-    except Exception as e:
-        raise handle_sdk_error(e)
+    return await run_task_and_respond(get_client(), get_task_name("calculate_area"), [data["length"], data["width"]])
