@@ -42,32 +42,46 @@ async def run_task_and_respond(
     args: list,
     message: str = "Task completed successfully",
 ) -> "TaskResponse":
+    """Create a task and return immediately with its ID (non-blocking)."""
     from ..models import TaskResponse
 
-    result = None
     try:
         result = await client.workflows.run_task(task_name, args)
         wf_id = await get_workflow_id(client)
         return TaskResponse(
             task_run_id=result.id,
             workflow_id=wf_id,
-            status=result.status,
-            message=message,
-            result=result.results,
+            status="running",
+            message="Task started",
         )
     except Exception as e:
-        if result is not None:
-            wf_id = None
-            try:
-                wf_id = await get_workflow_id(client)
-            except Exception:
-                pass
-            return TaskResponse(
-                task_run_id=result.id,
-                workflow_id=wf_id,
-                status="failed",
-                message=str(e),
-            )
+        raise handle_sdk_error(e)
+
+
+async def get_task_status(task_run_id: str) -> "TaskResponse":
+    """Poll a task run's current status."""
+    from ..models import TaskResponse
+
+    client = RenderAsync()
+    try:
+        details = await client.workflows.get_task_run(task_run_id)
+        wf_id = await get_workflow_id(client)
+        status = details.status.value if hasattr(details.status, 'value') else str(details.status)
+        result = None
+        message = f"Task {status}"
+        if status == "completed":
+            result = details.results
+            message = "Task completed successfully"
+        elif status == "failed":
+            message = details.error if hasattr(details, 'error') and details.error else "Task failed"
+        return TaskResponse(
+            task_run_id=task_run_id,
+            workflow_id=wf_id,
+            status=status,
+            message=message,
+            result=result,
+        )
+    except Exception as e:
         raise handle_sdk_error(e)
 
 

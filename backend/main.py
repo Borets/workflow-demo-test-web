@@ -11,7 +11,9 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from dotenv import load_dotenv
 
+from .models import TaskResponse
 from .routes import basic, subtasks, parallel, openai, advanced
+from .routes.utils import get_task_status
 
 # Load environment variables
 load_dotenv()
@@ -91,6 +93,11 @@ app.include_router(subtasks.router, prefix="/api/subtasks", tags=["Subtasks"])
 app.include_router(parallel.router, prefix="/api/parallel", tags=["Parallel"])
 app.include_router(openai.router, prefix="/api/openai", tags=["OpenAI"])
 app.include_router(advanced.router, prefix="/api/advanced", tags=["Advanced"])
+
+@app.get("/api/task/{task_run_id}", response_model=TaskResponse)
+async def poll_task(task_run_id: str):
+    """Poll a task run's current status and result."""
+    return await get_task_status(task_run_id)
 
 @app.get("/")
 async def root():

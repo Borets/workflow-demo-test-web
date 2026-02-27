@@ -63,4 +63,8 @@ export const runParallelSentiment = (texts: string[]) =>
 export const runMultiLanguageSummary = (text: string, languages: string[]) =>
   api.post<TaskResponse>('/api/advanced/multi_language_summary', { text, languages })
 
+// Task status polling
+export const getTaskStatus = (taskRunId: string) =>
+  api.get<TaskResponse>(`/api/task/${taskRunId}`)
+
 export default api
