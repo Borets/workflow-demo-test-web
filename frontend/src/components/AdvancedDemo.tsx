@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { runProcessDocument, runParallelSentiment, runMultiLanguageSummary } from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
+import EngineToggle from './EngineToggle'
+import type { Engine } from '../types'
 
 export default function AdvancedDemo() {
   const { runTask } = useTaskRunner()
+  const [engine, setEngine] = useState<Engine>('render')
 
   // Form states
   const [document, setDocument] = useState(
@@ -31,7 +34,10 @@ export default function AdvancedDemo() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Advanced Workflows</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Advanced Workflows</h2>
+        <EngineToggle value={engine} onChange={setEngine} />
+      </div>
       <p className="text-gray-600">
         Complex multi-stage pipelines demonstrating nested subtasks, conditional execution, and parallel processing.
       </p>
@@ -46,7 +52,7 @@ export default function AdvancedDemo() {
       <div className="border rounded-lg p-4">
         <h3 className="text-lg font-medium mb-2">Document Processing Pipeline</h3>
         <p className="text-gray-600 text-sm mb-4">
-          Multi-level pipeline: Translation → Summarization → Sentiment Analysis
+          Multi-level pipeline: Translation &rarr; Summarization &rarr; Sentiment Analysis
         </p>
         <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
           <strong>Workflow:</strong>
@@ -86,8 +92,9 @@ export default function AdvancedDemo() {
           <button
             onClick={() => runTask(
               'Process Document Pipeline',
-              () => runProcessDocument(document, enableTranslation ? translateTo : undefined),
-              { document, translate_to: enableTranslation ? translateTo : undefined }
+              () => runProcessDocument(document, engine, enableTranslation ? translateTo : undefined),
+              { document, translate_to: enableTranslation ? translateTo : undefined },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
@@ -103,9 +110,8 @@ export default function AdvancedDemo() {
           Analyze multiple texts in parallel and aggregate results
         </p>
         <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
-          <strong>Workflow:</strong> Launches sentiment analysis subtasks for each text in parallel
-          using asyncio.gather(), then aggregates the results to show sentiment distribution
-          (positive/negative/neutral counts).
+          <strong>Workflow:</strong> Launches sentiment analysis subtasks for each text in parallel,
+          then aggregates the results to show sentiment distribution (positive/negative/neutral counts).
         </div>
         <div className="space-y-3">
           <textarea
@@ -117,8 +123,9 @@ export default function AdvancedDemo() {
           <button
             onClick={() => runTask(
               'Parallel Sentiment Analysis',
-              () => runParallelSentiment(parseTexts(sentimentTexts)),
-              { texts: parseTexts(sentimentTexts) }
+              () => runParallelSentiment(parseTexts(sentimentTexts), engine),
+              { texts: parseTexts(sentimentTexts) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
@@ -158,8 +165,9 @@ export default function AdvancedDemo() {
           <button
             onClick={() => runTask(
               'Multi-Language Summary',
-              () => runMultiLanguageSummary(summaryText, parseLanguages(languages)),
-              { text: summaryText, languages: parseLanguages(languages) }
+              () => runMultiLanguageSummary(summaryText, parseLanguages(languages), engine),
+              { text: summaryText, languages: parseLanguages(languages) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
@@ -170,7 +178,7 @@ export default function AdvancedDemo() {
 
       <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
         <p className="text-sm text-purple-800">
-          🚀 Complex multi-stage workflows! These tasks orchestrate multiple subtasks and can run concurrently. 
+          Complex multi-stage workflows! These tasks orchestrate multiple subtasks and can run concurrently on either engine.
           Watch the sidebar to see the full execution flow in real-time.
         </p>
       </div>

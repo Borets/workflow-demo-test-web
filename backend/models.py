@@ -12,6 +12,7 @@ class TaskResponse(BaseModel):
     status: str = Field(..., description="Current task status")
     message: str = Field(..., description="Human-readable message")
     result: Optional[Any] = Field(None, description="Task result if completed")
+    engine: Optional[str] = Field(None, description="Execution engine: 'render' or 'trigger'")
 
 class ErrorResponse(BaseModel):
     """Error response."""

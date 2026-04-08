@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { runAddSquares, runCalculateArea } from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
+import EngineToggle from './EngineToggle'
+import type { Engine } from '../types'
 
 export default function SubtaskDemo() {
   const { runTask } = useTaskRunner()
+  const [engine, setEngine] = useState<Engine>('render')
 
   // Form states
   const [addA, setAddA] = useState('3')
@@ -13,7 +16,10 @@ export default function SubtaskDemo() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Subtask Examples</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Subtask Examples</h2>
+        <EngineToggle value={engine} onChange={setEngine} />
+      </div>
       <p className="text-gray-600">
         Tasks that call other tasks as subtasks, demonstrating workflow composition.
       </p>
@@ -46,8 +52,9 @@ export default function SubtaskDemo() {
           <button
             onClick={() => runTask(
               'Add Squares',
-              () => runAddSquares(parseInt(addA), parseInt(addB)),
-              { a: parseInt(addA), b: parseInt(addB) }
+              () => runAddSquares(parseInt(addA), parseInt(addB), engine),
+              { a: parseInt(addA), b: parseInt(addB) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -64,7 +71,7 @@ export default function SubtaskDemo() {
         </p>
         <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
           <strong>Workflow:</strong> This task calls the "multiply" task to calculate the area
-          (length × width) and computes the perimeter directly. Returns both values along with dimensions.
+          (length x width) and computes the perimeter directly. Returns both values along with dimensions.
         </div>
         <div className="flex gap-3">
           <input
@@ -84,8 +91,9 @@ export default function SubtaskDemo() {
           <button
             onClick={() => runTask(
               'Calculate Area',
-              () => runCalculateArea(parseInt(length), parseInt(width)),
-              { length: parseInt(length), width: parseInt(width) }
+              () => runCalculateArea(parseInt(length), parseInt(width), engine),
+              { length: parseInt(length), width: parseInt(width) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -96,7 +104,7 @@ export default function SubtaskDemo() {
 
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          ℹ️ Run multiple subtask workflows concurrently! Check the sidebar to see how each task calls its subtasks.
+          Run multiple subtask workflows concurrently! Use the engine toggle to compare Render vs Trigger.dev performance.
         </p>
       </div>
     </div>

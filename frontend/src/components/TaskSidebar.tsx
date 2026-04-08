@@ -58,7 +58,7 @@ export default function TaskSidebar() {
             </button>
           )}
         </div>
-        
+
         {/* Stats */}
         <div className="flex gap-4 text-xs">
           <div className="flex items-center gap-1">
@@ -92,8 +92,17 @@ export default function TaskSidebar() {
               <div className="flex items-start gap-2 mb-2">
                 <div className="mt-0.5">{getStatusIcon(task.status)}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-gray-900 truncate">
-                    {task.name}
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm text-gray-900 truncate">
+                      {task.name}
+                    </span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                      task.engine === 'trigger'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {task.engine === 'trigger' ? 'Trigger.dev' : 'Render'}
+                    </span>
                   </div>
                   <div className="text-xs text-gray-500">
                     {formatDuration(task)}
@@ -134,7 +143,12 @@ export default function TaskSidebar() {
               {/* Task Run ID / Dashboard Link */}
               {task.result?.task_run_id && (
                 <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
-                  {task.result.workflow_id ? (
+                  {task.engine === 'trigger' ? (
+                    <span className="font-mono text-gray-700">
+                      <span className="text-gray-500">Run:</span>{' '}
+                      {task.result.task_run_id.substring(0, 16)}...
+                    </span>
+                  ) : task.result.workflow_id ? (
                     <a
                       href={`https://dashboard.render.com/wf/${task.result.workflow_id}/runs/${task.result.task_run_id}`}
                       target="_blank"
@@ -160,4 +174,3 @@ export default function TaskSidebar() {
     </div>
   )
 }
-

@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { runSquare, runCube, runGreet, runAddNumbers, runMultiply } from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
+import EngineToggle from './EngineToggle'
+import type { Engine } from '../types'
 
 export default function BasicTasks() {
   const { runTask } = useTaskRunner()
+  const [engine, setEngine] = useState<Engine>('render')
 
   // Form states
   const [squareInput, setSquareInput] = useState('5')
@@ -16,7 +19,10 @@ export default function BasicTasks() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Basic Tasks</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">Basic Tasks</h2>
+        <EngineToggle value={engine} onChange={setEngine} />
+      </div>
       <p className="text-gray-600">
         Simple synchronous and asynchronous tasks demonstrating core functionality.
       </p>
@@ -36,8 +42,9 @@ export default function BasicTasks() {
           <button
             onClick={() => runTask(
               'Square',
-              () => runSquare(parseInt(squareInput)),
-              { a: parseInt(squareInput) }
+              () => runSquare(parseInt(squareInput), engine),
+              { a: parseInt(squareInput) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -61,8 +68,9 @@ export default function BasicTasks() {
           <button
             onClick={() => runTask(
               'Cube',
-              () => runCube(parseInt(cubeInput)),
-              { a: parseInt(cubeInput) }
+              () => runCube(parseInt(cubeInput), engine),
+              { a: parseInt(cubeInput) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -86,8 +94,9 @@ export default function BasicTasks() {
           <button
             onClick={() => runTask(
               'Greet',
-              () => runGreet(greetInput),
-              { name: greetInput }
+              () => runGreet(greetInput, engine),
+              { name: greetInput },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -118,8 +127,9 @@ export default function BasicTasks() {
           <button
             onClick={() => runTask(
               'Add Numbers',
-              () => runAddNumbers(parseInt(addA), parseInt(addB)),
-              { a: parseInt(addA), b: parseInt(addB) }
+              () => runAddNumbers(parseInt(addA), parseInt(addB), engine),
+              { a: parseInt(addA), b: parseInt(addB) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -150,8 +160,9 @@ export default function BasicTasks() {
           <button
             onClick={() => runTask(
               'Multiply',
-              () => runMultiply(parseInt(mulA), parseInt(mulB)),
-              { a: parseInt(mulA), b: parseInt(mulB) }
+              () => runMultiply(parseInt(mulA), parseInt(mulB), engine),
+              { a: parseInt(mulA), b: parseInt(mulB) },
+              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -162,8 +173,8 @@ export default function BasicTasks() {
 
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          ℹ️ Tasks now run concurrently! Click multiple "Run Task" buttons to execute them simultaneously.
-          View all task executions in the sidebar on the right.
+          Tasks run concurrently! Click multiple "Run Task" buttons to execute them simultaneously.
+          Use the engine toggle above to switch between Render Workflows and Trigger.dev.
         </p>
       </div>
     </div>
