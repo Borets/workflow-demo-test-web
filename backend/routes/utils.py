@@ -7,7 +7,7 @@ import os
 from fastapi import HTTPException
 from render_sdk import RenderAsync
 from render_sdk.client.errors import RenderError
-from render_sdk.public_api.api.workflows_ea import list_workflows
+from render_sdk.public_api.api.workflows_beta import list_workflows
 import httpx
 
 logger = logging.getLogger(__name__)
