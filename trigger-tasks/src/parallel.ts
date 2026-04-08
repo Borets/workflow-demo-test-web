@@ -1,5 +1,4 @@
-import { task } from "@trigger.dev/sdk/v3";
-import { unwrap } from "./utils";
+import { task } from "@trigger.dev/sdk";
 
 // --- Leaf tasks for the deep parallel tree ---
 
@@ -50,12 +49,12 @@ export const treePairMultiply = task({
   },
 });
 
-// --- Helper to run batch tasks sequentially (avoids batch.triggerAndWait type issues) ---
+// --- Sequential subtask helpers (triggerAndWait cannot be wrapped in Promise.all in v4) ---
 
 async function batchSquares(numbers: number[]): Promise<number[]> {
   const results: number[] = [];
   for (const n of numbers) {
-    results.push(unwrap<number>(await treeSquare.triggerAndWait({ n })));
+    results.push(await treeSquare.triggerAndWait({ n }).unwrap());
   }
   return results;
 }
@@ -63,15 +62,17 @@ async function batchSquares(numbers: number[]): Promise<number[]> {
 async function batchCubes(numbers: number[]): Promise<number[]> {
   const results: number[] = [];
   for (const n of numbers) {
-    results.push(unwrap<number>(await treeCube.triggerAndWait({ n })));
+    results.push(await treeCube.triggerAndWait({ n }).unwrap());
   }
   return results;
 }
 
-async function batchCombine(pairs: { sq: number; cb: number }[]): Promise<{ square: number; cube: number; combined: number }[]> {
+async function batchCombine(
+  pairs: { sq: number; cb: number }[]
+): Promise<{ square: number; cube: number; combined: number }[]> {
   const results: { square: number; cube: number; combined: number }[] = [];
   for (const p of pairs) {
-    results.push(unwrap(await treeCombine.triggerAndWait(p)));
+    results.push(await treeCombine.triggerAndWait(p).unwrap());
   }
   return results;
 }
@@ -79,15 +80,17 @@ async function batchCombine(pairs: { sq: number; cb: number }[]): Promise<{ squa
 async function batchPairAdd(pairs: [number, number][]): Promise<number[]> {
   const results: number[] = [];
   for (const [a, b] of pairs) {
-    results.push(unwrap<number>(await treePairAdd.triggerAndWait({ a, b })));
+    results.push(await treePairAdd.triggerAndWait({ a, b }).unwrap());
   }
   return results;
 }
 
-async function batchPairMultiply(pairs: [number, number][]): Promise<number[]> {
+async function batchPairMultiply(
+  pairs: [number, number][]
+): Promise<number[]> {
   const results: number[] = [];
   for (const [a, b] of pairs) {
-    results.push(unwrap<number>(await treePairMultiply.triggerAndWait({ a, b })));
+    results.push(await treePairMultiply.triggerAndWait({ a, b }).unwrap());
   }
   return results;
 }
@@ -135,7 +138,9 @@ export const treeScatter = task({
     const results: any[] = [];
     for (let i = 0; i < chunks.length; i++) {
       results.push(
-        unwrap(await treeChunkProcess.triggerAndWait({ chunk: chunks[i], chunkId: i }))
+        await treeChunkProcess
+          .triggerAndWait({ chunk: chunks[i], chunkId: i })
+          .unwrap()
       );
     }
 
@@ -215,18 +220,17 @@ export const treePartialSum = task({
       reduced.push(payload.values[payload.values.length - 1]);
     }
 
-    return unwrap<{ final: number; depth: number }>(
-      await treePartialSum.triggerAndWait({
-        values: reduced,
-        depth: payload.depth + 1,
-      })
-    );
+    return await treePartialSum
+      .triggerAndWait({ values: reduced, depth: payload.depth + 1 })
+      .unwrap();
   },
 });
 
 export const treeLayeredSum = task({
   id: "tree_layered_sum",
-  run: async (payload: { crossResult: { pair_sums: number[]; pair_products: number[] } }) => {
+  run: async (payload: {
+    crossResult: { pair_sums: number[]; pair_products: number[] };
+  }) => {
     const values = [
       ...payload.crossResult.pair_sums,
       ...payload.crossResult.pair_products,
@@ -234,17 +238,15 @@ export const treeLayeredSum = task({
     console.log(
       `[L9 tree_layered_sum] reducing ${values.length} values recursively`
     );
-    return unwrap(await treePartialSum.triggerAndWait({ values, depth: 1 }));
+    return await treePartialSum
+      .triggerAndWait({ values, depth: 1 })
+      .unwrap();
   },
 });
 
 export const treeFinalize = task({
   id: "tree_finalize",
-  run: async (payload: {
-    scatter: any;
-    cross: any;
-    layered: any;
-  }) => {
+  run: async (payload: { scatter: any; cross: any; layered: any }) => {
     console.log("[L12 tree_finalize] assembling final result");
     return {
       scatter_total: payload.scatter.scatter_total,
@@ -261,9 +263,7 @@ export const treeFinalize = task({
 export const computeMultiple = task({
   id: "compute_multiple",
   run: async (payload: { numbers: number[] }) => {
-    console.log(
-      `Processing ${payload.numbers.length} numbers in parallel`
-    );
+    console.log(`Processing ${payload.numbers.length} numbers in parallel`);
 
     const squares = await batchSquares(payload.numbers);
     const cubes = await batchCubes(payload.numbers);
@@ -303,29 +303,41 @@ export const deepParallelTree = task({
       `[L0 deep_parallel_tree] START – ${payload.numbers.length} numbers, chunkSize=${chunkSize}`
     );
 
-    const scatter = unwrap<any>(
-      await treeScatter.triggerAndWait({ numbers: payload.numbers, chunkSize })
-    );
+    const scatter: any = await treeScatter
+      .triggerAndWait({ numbers: payload.numbers, chunkSize })
+      .unwrap();
 
-    const cross = unwrap<any>(
-      await treeCrossReduce.triggerAndWait({ chunkResults: scatter.chunk_results })
-    );
+    const cross: any = await treeCrossReduce
+      .triggerAndWait({ chunkResults: scatter.chunk_results })
+      .unwrap();
 
-    const layered = unwrap<any>(
-      await treeLayeredSum.triggerAndWait({ crossResult: cross })
-    );
+    const layered: any = await treeLayeredSum
+      .triggerAndWait({ crossResult: cross })
+      .unwrap();
 
-    const summary = unwrap<any>(
-      await treeFinalize.triggerAndWait({ scatter, cross, layered })
-    );
+    const summary: any = await treeFinalize
+      .triggerAndWait({ scatter, cross, layered })
+      .unwrap();
 
     const n = payload.numbers.length;
     const numChunks = scatter.num_chunks;
     const numPairs = cross.num_pairs;
-    const numCrossVals = cross.pair_sums.length + cross.pair_products.length;
+    const numCrossVals =
+      cross.pair_sums.length + cross.pair_products.length;
     const recursiveAdds = numCrossVals > 1 ? numCrossVals - 1 : 0;
     const totalTasks =
-      1 + 1 + numChunks + n + n + n + 1 + numPairs + numPairs + 1 + recursiveAdds + 1;
+      1 +
+      1 +
+      numChunks +
+      n +
+      n +
+      n +
+      1 +
+      numPairs +
+      numPairs +
+      1 +
+      recursiveAdds +
+      1;
 
     summary.total_tasks_approx = totalTasks;
     summary.input_size = n;

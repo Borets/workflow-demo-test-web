@@ -1,7 +1,6 @@
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 import OpenAI from "openai";
 
-// Lazy-initialized client (uses OPENAI_API_KEY env var automatically)
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI {

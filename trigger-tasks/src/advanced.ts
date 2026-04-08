@@ -1,6 +1,5 @@
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 import { analyzeTextSentiment, translateText, summarizeText } from "./openai";
-import { unwrap } from "./utils";
 
 export const processDocumentPipeline = task({
   id: "process_document_pipeline",
@@ -14,13 +13,15 @@ export const processDocumentPipeline = task({
     // Level 1: Translation (if requested)
     let textToSummarize: string;
     if (payload.translateTo) {
-      console.log("[Pipeline Task] -> Level 1: Calling translate_text subtask...");
-      const translated = unwrap<string>(
-        await translateText.triggerAndWait({
+      console.log(
+        "[Pipeline Task] -> Level 1: Calling translate_text subtask..."
+      );
+      const translated = await translateText
+        .triggerAndWait({
           text: payload.document,
           targetLanguage: payload.translateTo,
         })
-      );
+        .unwrap();
       results.translated_text = translated;
       textToSummarize = translated;
     } else {
@@ -29,22 +30,21 @@ export const processDocumentPipeline = task({
     }
 
     // Level 2: Summarization
-    console.log("[Pipeline Task] -> Level 2: Calling summarize_text subtask...");
-    const summary = unwrap<string>(
-      await summarizeText.triggerAndWait({
-        text: textToSummarize,
-        maxSentences: 2,
-      })
+    console.log(
+      "[Pipeline Task] -> Level 2: Calling summarize_text subtask..."
     );
+    const summary = await summarizeText
+      .triggerAndWait({ text: textToSummarize, maxSentences: 2 })
+      .unwrap();
     results.summary = summary;
 
     // Level 3: Sentiment Analysis
     console.log(
       "[Pipeline Task] -> Level 3: Calling analyze_text_sentiment subtask..."
     );
-    const sentiment = unwrap<any>(
-      await analyzeTextSentiment.triggerAndWait({ text: summary })
-    );
+    const sentiment = await analyzeTextSentiment
+      .triggerAndWait({ text: summary })
+      .unwrap();
     results.sentiment_analysis = sentiment;
 
     console.log("[Pipeline Task] Pipeline complete!");
@@ -62,7 +62,7 @@ export const parallelSentimentAnalysis = task({
     const results: any[] = [];
     for (const text of payload.texts) {
       results.push(
-        unwrap<any>(await analyzeTextSentiment.triggerAndWait({ text }))
+        await analyzeTextSentiment.triggerAndWait({ text }).unwrap()
       );
     }
 
@@ -94,20 +94,17 @@ export const multiLanguageSummary = task({
     );
 
     // Step 1: Summarize the original text
-    const originalSummary = unwrap<string>(
-      await summarizeText.triggerAndWait({ text: payload.text, maxSentences: 3 })
-    );
+    const originalSummary = await summarizeText
+      .triggerAndWait({ text: payload.text, maxSentences: 3 })
+      .unwrap();
 
     // Step 2: Translate summary to all languages
     const translations: string[] = [];
     for (const lang of payload.languages) {
       translations.push(
-        unwrap<string>(
-          await translateText.triggerAndWait({
-            text: originalSummary,
-            targetLanguage: lang,
-          })
-        )
+        await translateText
+          .triggerAndWait({ text: originalSummary, targetLanguage: lang })
+          .unwrap()
       );
     }
 

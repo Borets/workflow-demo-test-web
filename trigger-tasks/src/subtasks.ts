@@ -1,16 +1,15 @@
-import { task } from "@trigger.dev/sdk/v3";
+import { task } from "@trigger.dev/sdk";
 import { square, multiply } from "./basic";
-import { unwrap } from "./utils";
 
 export const addSquares = task({
   id: "add_squares",
   run: async (payload: { a: number; b: number }) => {
     console.log(`Computing add_squares: ${payload.a}² + ${payload.b}²`);
 
-    const result1 = unwrap<number>(await square.triggerAndWait({ a: payload.a }));
+    const result1 = await square.triggerAndWait({ a: payload.a }).unwrap();
     console.log(`First square result: ${result1}`);
 
-    const result2 = unwrap<number>(await square.triggerAndWait({ a: payload.b }));
+    const result2 = await square.triggerAndWait({ a: payload.b }).unwrap();
     console.log(`Second square result: ${result2}`);
 
     const total = result1 + result2;
@@ -26,9 +25,9 @@ export const calculateArea = task({
       `Calculating area and perimeter for ${payload.length}x${payload.width}`
     );
 
-    const area = unwrap<number>(
-      await multiply.triggerAndWait({ a: payload.length, b: payload.width })
-    );
+    const area = await multiply
+      .triggerAndWait({ a: payload.length, b: payload.width })
+      .unwrap();
     console.log(`Area calculated: ${area}`);
 
     const perimeter = 2 * (payload.length + payload.width);
