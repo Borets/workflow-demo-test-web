@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runComputeMultiple, runSumOfSquares, runDeepParallelTree } from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
-import EngineToggle from './EngineToggle'
-import type { Engine } from '../types'
 
 export default function ParallelDemo() {
   const { runTask } = useTaskRunner()
-  const [engine, setEngine] = useState<Engine>('render')
 
   // Form states
   const [computeNumbers, setComputeNumbers] = useState('2, 3, 4')
@@ -22,7 +19,6 @@ export default function ParallelDemo() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Parallel Execution</h2>
-        <EngineToggle value={engine} onChange={setEngine} />
       </div>
       <p className="text-gray-600">
         Demonstrate concurrent task execution for improved performance.
@@ -49,9 +45,8 @@ export default function ParallelDemo() {
           <button
             onClick={() => runTask(
               'Compute Multiple',
-              () => runComputeMultiple(parseNumbers(computeNumbers), engine),
-              { numbers: parseNumbers(computeNumbers) },
-              engine
+              () => runComputeMultiple(parseNumbers(computeNumbers)),
+              { numbers: parseNumbers(computeNumbers) }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -81,9 +76,8 @@ export default function ParallelDemo() {
           <button
             onClick={() => runTask(
               'Sum of Squares',
-              () => runSumOfSquares(parseNumbers(sumNumbers), engine),
-              { numbers: parseNumbers(sumNumbers) },
-              engine
+              () => runSumOfSquares(parseNumbers(sumNumbers)),
+              { numbers: parseNumbers(sumNumbers) }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -131,11 +125,9 @@ export default function ParallelDemo() {
               'Deep Parallel Tree',
               () => runDeepParallelTree(
                 parseNumbers(treeNumbers),
-                engine,
                 parseInt(chunkSize) || undefined
               ),
               { numbers: parseNumbers(treeNumbers), chunk_size: parseInt(chunkSize) || 4 },
-              engine
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -146,7 +138,7 @@ export default function ParallelDemo() {
 
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          Parallel workflows run multiple internal subtasks concurrently! Use the engine toggle to compare performance across engines.
+          Parallel workflows run multiple internal subtasks concurrently and surface progress in the sidebar.
         </p>
       </div>
     </div>

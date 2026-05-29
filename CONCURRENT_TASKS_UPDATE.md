@@ -58,7 +58,7 @@ All task components updated to use concurrent execution:
 
 ## Benefits
 
-1. **Better Performance**: Users can trigger multiple tasks without waiting
+1. **Better Performance**: Users can start multiple tasks without waiting
 2. **Improved Visibility**: See all task activity in one place
 3. **Better UX**: No locked UI, clear status for each task
 4. **Debugging**: Easier to understand what's happening with concurrent tasks
@@ -127,4 +127,3 @@ Possible future improvements:
 - Task groups/batches
 - Performance metrics
 - Task dependencies visualization
-

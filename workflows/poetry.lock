@@ -1279,20 +1279,20 @@ six = ">=1.5"
 
 [[package]]
 name = "render-sdk"
-version = "0.1.0"
+version = "0.6.1"
 description = "Python SDK for Render Workflows"
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "render_sdk-0.1.0-py3-none-any.whl", hash = "sha256:e2724324f62cd39615f0c584cd31e434ef0a9890f7c7b6e51a88b0b888a4bafb"},
-    {file = "render_sdk-0.1.0.tar.gz", hash = "sha256:806c056ee2d35a5b82d02bc7947901c5bd26c31312269422b30767b4df89baee"},
+    {file = "render_sdk-0.6.1-py3-none-any.whl", hash = "sha256:50028de23cd52cae2f240dc4861e45d38cb9bf775cc0fe9c3610764c07328e5a"},
+    {file = "render_sdk-0.6.1.tar.gz", hash = "sha256:8dacfb921dc787027468583e3e42e82994c7a374f061771147b7ba31f170292f"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.8.0,<4.0.0"
-httpx = ">=0.28.1,<0.29.0"
-openapi-python-client = ">=0.26.1,<0.27.0"
+aiohttp = ">=3.12.14,<4"
+httpx = ">=0.28.1,<0.29"
+openapi-python-client = ">=0.26.1,<0.27"
 
 [[package]]
 name = "rich"
@@ -1678,4 +1678,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "41cddd764a54cdc611ab97aa40f6869fa919fdc7ee3238a85ccc405666adec3d"
+content-hash = "dbe651e9443ae8727a465589fc740faeeca9b7d7a62c6c2abfee868086481842"

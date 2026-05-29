@@ -1,6 +1,6 @@
 # Render Workflows Demo
 
-A full-stack example application demonstrating the Render Workflows SDK (`render-sdk` v0.5.0) with real-world use cases including parallel fan-out/fan-in trees, OpenAI integration, and multi-level subtask composition.
+A full-stack example application demonstrating the Render Workflows SDK (`render-sdk` v0.6.1) with real-world use cases including parallel fan-out/fan-in trees, OpenAI integration, and multi-level subtask composition.
 
 ## Architecture
 
@@ -89,39 +89,29 @@ Error: Could not import module 'main': No module named 'main'
 **Environment variables:**
 - `VITE_API_URL` — URL of your backend service (e.g. `https://workflow-demo-test-web-api.onrender.com`)
 
-## SDK v0.5.0 Migration Notes
+## SDK v0.6.1 Notes
 
-This project uses `render-sdk>=0.5.0`. Key changes from earlier versions:
+This project pins `render-sdk==0.6.1`. Current client and task-definition patterns used here:
 
-### Python SDK (v0.3.x/v0.4.x to v0.5.0)
+### Python SDK
 
-1. **`Render()` is now sync.** Use `RenderAsync()` in async code (e.g. FastAPI handlers). Using `await` with the sync client raises `TypeError`.
+1. **Use `RenderAsync()` in async code.** FastAPI handlers should use the async client. Use `Render()` only from synchronous code.
 
-2. **Double-await is gone.** `run_task()` returns `TaskRunDetails` directly:
+2. **`start_task()` returns a run ID immediately.** This demo uses it from the backend route helpers and then polls task status by run ID:
    ```python
-   # Old (v0.4.x)
-   task_run = await client.workflows.run_task(...)
-   result = await task_run
-
-   # New (v0.5.0)
-   result = await client.workflows.run_task(...)
+   task_run = await client.workflows.start_task(...)
    ```
-   Use `start_task()` if you need fire-and-forget.
+   Use `run_task()` when you want to wait for the completed task result in one call.
 
-3. **`default_timeout` renamed to `default_timeout_seconds`** in `Workflows()` config.
+3. **Task configuration stays on the `Workflows()` instance.** This repo configures retry, timeout, and plan defaults in `workflows/app.py`.
 
-4. **`RenderSync` removed.** Just use `Render` for sync or `RenderAsync` for async.
+4. **`RenderSync` is not used.** Use `Render` for sync or `RenderAsync` for async.
 
-5. **SSE streaming changed.** `render.workflows.task_run_events()` uses a plain `for` loop on the sync client (not `async for`).
+5. **SSE streaming differs by client.** The sync client uses a plain `for` loop for `task_run_events()`, while the async client uses `async for`.
 
-### TypeScript SDK (v0.1.0 to v0.4.1)
+### TypeScript SDK
 
-1. Package renamed from `@render/sdk` to `@renderinc/sdk`.
-2. `startTaskServer()` removed — tasks register on definition.
-3. `wait_duration` renamed to `wait_duration_ms` in retry config.
-4. `BlobClient` renamed to `ObjectClient` (`experimental.storage.objects`).
-5. `runTask()` no longer opens SSE immediately.
-6. `taskRunEvents()` and `startTask()` require v0.4.0+.
+This demo uses the Python SDK for workflow definitions and backend task runs. For TypeScript workflow projects, use the current `@renderinc/sdk` package documented by Render.
 
 ## Local Development
 
@@ -296,7 +286,7 @@ API docs available at `/docs` (Swagger) and `/redoc` when backend is running.
 The **Root Directory** on Render must be set to `workflows`. Without this, `render-workflows main:app` can't find `main.py`.
 
 ### "TypeError: object TaskRunDetails can't be used in 'await' expression"
-You're using the sync `Render()` client with `await`. Switch to `RenderAsync()` for async code (SDK v0.5.0 change).
+You're using the sync `Render()` client with `await`. Switch to `RenderAsync()` for async code.
 
 ### "RENDER_API_KEY not configured"
 Set the environment variable in your `.env` file or in the Render dashboard under Environment.
@@ -316,5 +306,5 @@ The `WORKFLOW_SERVICE_SLUG` env var on the backend must match the slug shown in 
 ## Resources
 
 - [Render Workflows Documentation](https://docs.render.com/workflows)
-- [Render SDK on PyPI](https://pypi.org/project/render_sdk/)
+- [Render SDK on PyPI](https://pypi.org/project/render-sdk/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)

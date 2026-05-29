@@ -42,11 +42,11 @@ async def run_task_and_respond(
     args: list,
     message: str = "Task completed successfully",
 ) -> "TaskResponse":
-    """Create a task and return immediately with its ID (non-blocking)."""
+    """Start a task run and return immediately with its ID."""
     from ..models import TaskResponse
 
     try:
-        result = await client.workflows.run_task(task_name, args)
+        result = await client.workflows.start_task(task_name, args)
         wf_id = await get_workflow_id(client)
         return TaskResponse(
             task_run_id=result.id,
@@ -83,56 +83,6 @@ async def get_task_status(task_run_id: str) -> "TaskResponse":
         )
     except Exception as e:
         raise handle_sdk_error(e)
-
-
-async def run_trigger_task_and_respond(
-    task_id: str,
-    payload: dict,
-    message: str = "Task completed successfully",
-) -> "TaskResponse":
-    """Trigger a task on Trigger.dev and return immediately with its run ID."""
-    from ..models import TaskResponse
-    from .trigger_client import trigger_task
-
-    try:
-        result = await trigger_task(task_id, payload)
-        return TaskResponse(
-            task_run_id=result["id"],
-            workflow_id=None,
-            status="running",
-            message="Task started",
-            engine="trigger",
-        )
-    except Exception as e:
-        logger.error(f"Trigger.dev error: {e}")
-        raise HTTPException(status_code=500, detail=f"Trigger.dev error: {e}")
-
-
-async def get_trigger_task_status(run_id: str) -> "TaskResponse":
-    """Poll a Trigger.dev run's current status."""
-    from ..models import TaskResponse
-    from .trigger_client import get_trigger_run_status
-
-    try:
-        run_data = await get_trigger_run_status(run_id)
-        status = run_data["status"]
-        result = run_data.get("output") if status == "completed" else None
-        error_msg = None
-        if status == "failed" and run_data.get("error"):
-            error_info = run_data["error"]
-            error_msg = error_info.get("message", str(error_info)) if isinstance(error_info, dict) else str(error_info)
-
-        return TaskResponse(
-            task_run_id=run_id,
-            workflow_id=None,
-            status=status,
-            message=error_msg or f"Task {status}",
-            result=result,
-            engine="trigger",
-        )
-    except Exception as e:
-        logger.error(f"Trigger.dev polling error: {e}")
-        raise HTTPException(status_code=500, detail=f"Trigger.dev polling error: {e}")
 
 
 def handle_sdk_error(e: Exception) -> HTTPException:

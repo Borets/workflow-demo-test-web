@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
-import type { TaskResponse, Engine } from '../types'
+import type { TaskResponse } from '../types'
 
 export interface TaskExecution {
   id: string
@@ -10,12 +10,11 @@ export interface TaskExecution {
   result?: TaskResponse
   error?: string
   inputs?: Record<string, any>
-  engine: Engine
 }
 
 interface TaskExecutionContextType {
   tasks: TaskExecution[]
-  addTask: (name: string, inputs?: Record<string, any>, engine?: Engine) => string
+  addTask: (name: string, inputs?: Record<string, any>) => string
   updateTask: (id: string, update: Partial<TaskExecution>) => void
   completeTask: (id: string, result: TaskResponse) => void
   failTask: (id: string, error: string, result?: TaskResponse) => void
@@ -27,7 +26,7 @@ const TaskExecutionContext = createContext<TaskExecutionContextType | undefined>
 export function TaskExecutionProvider({ children }: { children: ReactNode }) {
   const [tasks, setTasks] = useState<TaskExecution[]>([])
 
-  const addTask = (name: string, inputs?: Record<string, any>, engine: Engine = 'render'): string => {
+  const addTask = (name: string, inputs?: Record<string, any>): string => {
     const id = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const newTask: TaskExecution = {
       id,
@@ -35,7 +34,6 @@ export function TaskExecutionProvider({ children }: { children: ReactNode }) {
       status: 'running',
       startTime: new Date(),
       inputs,
-      engine,
     }
     setTasks(prev => [newTask, ...prev])
     return id

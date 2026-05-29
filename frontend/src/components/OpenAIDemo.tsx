@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runAnalyzeSentiment, runTranslate, runSummarize } from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
-import EngineToggle from './EngineToggle'
-import type { Engine } from '../types'
 
 export default function OpenAIDemo() {
   const { runTask } = useTaskRunner()
-  const [engine, setEngine] = useState<Engine>('render')
 
   // Form states
   const [sentimentText, setSentimentText] = useState('I absolutely love this product! It works perfectly.')
@@ -21,7 +18,6 @@ export default function OpenAIDemo() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">OpenAI Integration</h2>
-        <EngineToggle value={engine} onChange={setEngine} />
       </div>
       <p className="text-gray-600">
         Workflow tasks that integrate with OpenAI's GPT models for AI-powered processing.
@@ -29,7 +25,7 @@ export default function OpenAIDemo() {
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
           <strong>Note:</strong> These tasks require the OPENAI_API_KEY environment variable
-          to be set in your workflow worker service (and in Trigger.dev project settings when using Trigger.dev).
+          to be set in your workflow worker service.
         </p>
       </div>
 
@@ -53,9 +49,8 @@ export default function OpenAIDemo() {
           <button
             onClick={() => runTask(
               'Sentiment Analysis',
-              () => runAnalyzeSentiment(sentimentText, engine),
-              { text: sentimentText },
-              engine
+              () => runAnalyzeSentiment(sentimentText),
+              { text: sentimentText }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
@@ -91,9 +86,8 @@ export default function OpenAIDemo() {
           <button
             onClick={() => runTask(
               'Translate Text',
-              () => runTranslate(translateText, targetLanguage, engine),
-              { text: translateText, target_language: targetLanguage },
-              engine
+              () => runTranslate(translateText, targetLanguage),
+              { text: translateText, target_language: targetLanguage }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
@@ -131,9 +125,8 @@ export default function OpenAIDemo() {
           <button
             onClick={() => runTask(
               'Summarize Text',
-              () => runSummarize(summarizeText, engine, parseInt(maxSentences)),
-              { text: summarizeText, max_sentences: parseInt(maxSentences) },
-              engine
+              () => runSummarize(summarizeText, parseInt(maxSentences)),
+              { text: summarizeText, max_sentences: parseInt(maxSentences) }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full"
           >
@@ -144,7 +137,7 @@ export default function OpenAIDemo() {
 
       <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
         <p className="text-sm text-green-800">
-          OpenAI-powered tasks! Run multiple AI operations concurrently on either engine. Check the sidebar to track progress.
+          OpenAI-powered tasks can run concurrently. Check the sidebar to track progress.
         </p>
       </div>
     </div>

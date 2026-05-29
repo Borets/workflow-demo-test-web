@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import run_task_and_respond, run_trigger_task_and_respond
+from .utils import run_task_and_respond
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ def get_task_name(task: str) -> str:
     return f"{service_slug}/{task}"
 
 @router.post("/process_document", response_model=TaskResponse)
-async def process_document(data: dict[str, Any], engine: str = "render"):
+async def process_document(data: dict[str, Any]):
     """
     Execute the process_document_pipeline task (multi-level subtasks).
 
@@ -31,14 +31,6 @@ async def process_document(data: dict[str, Any], engine: str = "render"):
         "translate_to": "Spanish"  # Optional
     }
     """
-    if engine == "trigger":
-        payload: dict[str, Any] = {"document": data["document"]}
-        if data.get("translate_to"):
-            payload["translateTo"] = data["translate_to"]
-        return await run_trigger_task_and_respond(
-            "process_document_pipeline", payload,
-            message="Document pipeline completed",
-        )
     return await run_task_and_respond(
         get_client(), get_task_name("process_document_pipeline"),
         [data["document"], data.get("translate_to")],
@@ -46,7 +38,7 @@ async def process_document(data: dict[str, Any], engine: str = "render"):
     )
 
 @router.post("/parallel_sentiment", response_model=TaskResponse)
-async def parallel_sentiment(data: dict[str, Any], engine: str = "render"):
+async def parallel_sentiment(data: dict[str, Any]):
     """
     Execute the parallel_sentiment_analysis task.
 
@@ -54,18 +46,13 @@ async def parallel_sentiment(data: dict[str, Any], engine: str = "render"):
         "texts": ["Great product!", "Terrible service.", "It's okay."]
     }
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond(
-            "parallel_sentiment_analysis", {"texts": data["texts"]},
-            message="Parallel sentiment analysis completed",
-        )
     return await run_task_and_respond(
         get_client(), get_task_name("parallel_sentiment_analysis"), [data["texts"]],
         message="Parallel sentiment analysis completed",
     )
 
 @router.post("/multi_language_summary", response_model=TaskResponse)
-async def multi_language_summary(data: dict[str, Any], engine: str = "render"):
+async def multi_language_summary(data: dict[str, Any]):
     """
     Execute the multi_language_summary task.
 
@@ -74,11 +61,6 @@ async def multi_language_summary(data: dict[str, Any], engine: str = "render"):
         "languages": ["Spanish", "French", "German"]
     }
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond(
-            "multi_language_summary", {"text": data["text"], "languages": data["languages"]},
-            message="Multi-language summary completed",
-        )
     return await run_task_and_respond(
         get_client(), get_task_name("multi_language_summary"),
         [data["text"], data["languages"]],

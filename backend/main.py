@@ -1,5 +1,5 @@
 """
-FastAPI backend for triggering Render workflows.
+FastAPI backend for running Render workflows.
 
 This API provides endpoints to execute workflow tasks and retrieve results.
 """
@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 
 from .models import TaskResponse
 from .routes import basic, subtasks, parallel, openai, advanced
-from .routes.utils import get_task_status, get_trigger_task_status
+from .routes.utils import get_task_status
 
 # Load environment variables
 load_dotenv()
@@ -21,7 +21,7 @@ load_dotenv()
 # Create FastAPI app
 app = FastAPI(
     title="Render SDK Examples API",
-    description="API for triggering Render workflow tasks",
+    description="API for running Render workflow tasks",
     version="0.1.0"
 )
 
@@ -95,10 +95,8 @@ app.include_router(openai.router, prefix="/api/openai", tags=["OpenAI"])
 app.include_router(advanced.router, prefix="/api/advanced", tags=["Advanced"])
 
 @app.get("/api/task/{task_run_id}", response_model=TaskResponse)
-async def poll_task(task_run_id: str, engine: str = "render"):
+async def poll_task(task_run_id: str):
     """Poll a task run's current status and result."""
-    if engine == "trigger":
-        return await get_trigger_task_status(task_run_id)
     return await get_task_status(task_run_id)
 
 @app.get("/")

@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { runAddSquares, runCalculateArea } from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
-import EngineToggle from './EngineToggle'
-import type { Engine } from '../types'
 
 export default function SubtaskDemo() {
   const { runTask } = useTaskRunner()
-  const [engine, setEngine] = useState<Engine>('render')
 
   // Form states
   const [addA, setAddA] = useState('3')
@@ -18,7 +15,6 @@ export default function SubtaskDemo() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Subtask Examples</h2>
-        <EngineToggle value={engine} onChange={setEngine} />
       </div>
       <p className="text-gray-600">
         Tasks that call other tasks as subtasks, demonstrating workflow composition.
@@ -52,9 +48,8 @@ export default function SubtaskDemo() {
           <button
             onClick={() => runTask(
               'Add Squares',
-              () => runAddSquares(parseInt(addA), parseInt(addB), engine),
-              { a: parseInt(addA), b: parseInt(addB) },
-              engine
+              () => runAddSquares(parseInt(addA), parseInt(addB)),
+              { a: parseInt(addA), b: parseInt(addB) }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -91,9 +86,8 @@ export default function SubtaskDemo() {
           <button
             onClick={() => runTask(
               'Calculate Area',
-              () => runCalculateArea(parseInt(length), parseInt(width), engine),
-              { length: parseInt(length), width: parseInt(width) },
-              engine
+              () => runCalculateArea(parseInt(length), parseInt(width)),
+              { length: parseInt(length), width: parseInt(width) }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -104,7 +98,7 @@ export default function SubtaskDemo() {
 
       <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          Run multiple subtask workflows concurrently! Use the engine toggle to compare Render vs Trigger.dev performance.
+          Run multiple subtask workflows concurrently and track each run in the sidebar.
         </p>
       </div>
     </div>

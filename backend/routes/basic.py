@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import run_task_and_respond, run_trigger_task_and_respond
+from .utils import run_task_and_respond
 
 router = APIRouter()
 
@@ -23,61 +23,51 @@ def get_task_name(task: str) -> str:
 
 
 @router.post("/square", response_model=TaskResponse)
-async def square(data: dict[str, Any], engine: str = "render"):
+async def square(data: dict[str, Any]):
     """
     Execute the square task.
 
     Input: {"a": 5}
     Output: 25
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("square", {"a": data["a"]})
     return await run_task_and_respond(get_client(), get_task_name("square"), [data["a"]])
 
 @router.post("/cube", response_model=TaskResponse)
-async def cube(data: dict[str, Any], engine: str = "render"):
+async def cube(data: dict[str, Any]):
     """
     Execute the cube task.
 
     Input: {"a": 3}
     Output: 27
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("cube", {"a": data["a"]})
     return await run_task_and_respond(get_client(), get_task_name("cube"), [data["a"]])
 
 @router.post("/greet", response_model=TaskResponse)
-async def greet(data: dict[str, Any], engine: str = "render"):
+async def greet(data: dict[str, Any]):
     """
     Execute the greet task.
 
     Input: {"name": "Alice"}
     Output: "Hello, Alice! Welcome to Render Workflows."
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("greet", {"name": data["name"]})
     return await run_task_and_respond(get_client(), get_task_name("greet"), [data["name"]])
 
 @router.post("/add_numbers", response_model=TaskResponse)
-async def add_numbers(data: dict[str, Any], engine: str = "render"):
+async def add_numbers(data: dict[str, Any]):
     """
     Execute the add_numbers task (with retry config).
 
     Input: {"a": 5, "b": 3}
     Output: 8
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("add_with_retry", {"a": data["a"], "b": data["b"]})
     return await run_task_and_respond(get_client(), get_task_name("add_with_retry"), [data["a"], data["b"]])
 
 @router.post("/multiply", response_model=TaskResponse)
-async def multiply(data: dict[str, Any], engine: str = "render"):
+async def multiply(data: dict[str, Any]):
     """
     Execute the multiply task.
 
     Input: {"a": 4, "b": 7}
     Output: 28
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("multiply", {"a": data["a"], "b": data["b"]})
     return await run_task_and_respond(get_client(), get_task_name("multiply"), [data["a"], data["b"]])

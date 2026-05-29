@@ -1,6 +1,5 @@
 import { useTaskExecution } from '../contexts/TaskExecutionContext'
 import { getTaskStatus } from '../services/api'
-import type { Engine } from '../types'
 
 const POLL_INTERVAL = 1000
 
@@ -10,10 +9,9 @@ export function useTaskRunner() {
   const runTask = async (
     taskName: string,
     taskFn: () => Promise<any>,
-    inputs?: Record<string, any>,
-    engine: Engine = 'render'
+    inputs?: Record<string, any>
   ) => {
-    const taskId = addTask(taskName, inputs, engine)
+    const taskId = addTask(taskName, inputs)
     try {
       const response = await taskFn()
       const data = response.data
@@ -32,17 +30,17 @@ export function useTaskRunner() {
       }
 
       // Task is running — poll until terminal state
-      await pollUntilDone(taskId, data.task_run_id, engine)
+      await pollUntilDone(taskId, data.task_run_id)
     } catch (err: any) {
       failTask(taskId, err.response?.data?.detail || err.message)
     }
   }
 
-  const pollUntilDone = async (taskId: string, taskRunId: string, engine: Engine) => {
+  const pollUntilDone = async (taskId: string, taskRunId: string) => {
     while (true) {
       await new Promise(r => setTimeout(r, POLL_INTERVAL))
       try {
-        const res = await getTaskStatus(taskRunId, engine)
+        const res = await getTaskStatus(taskRunId)
         const data = res.data
 
         if (data.status === 'completed') {

@@ -8,7 +8,7 @@ from render_sdk import RenderAsync
 import os
 
 from ..models import TaskResponse
-from .utils import run_task_and_respond, run_trigger_task_and_respond
+from .utils import run_task_and_respond
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ def get_task_name(task: str) -> str:
     return f"{service_slug}/{task}"
 
 @router.post("/compute_multiple", response_model=TaskResponse)
-async def compute_multiple(data: dict[str, Any], engine: str = "render"):
+async def compute_multiple(data: dict[str, Any]):
     """
     Execute the compute_multiple task (parallel squares and cubes).
 
@@ -34,12 +34,10 @@ async def compute_multiple(data: dict[str, Any], engine: str = "render"):
         "count": 3
     }
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("compute_multiple", {"numbers": data["numbers"]})
     return await run_task_and_respond(get_client(), get_task_name("compute_multiple"), [data["numbers"]])
 
 @router.post("/sum_of_squares", response_model=TaskResponse)
-async def sum_of_squares(data: dict[str, Any], engine: str = "render"):
+async def sum_of_squares(data: dict[str, Any]):
     """
     Execute the sum_of_squares task (parallel computation + aggregation).
 
@@ -50,12 +48,10 @@ async def sum_of_squares(data: dict[str, Any], engine: str = "render"):
         "sum": 30
     }
     """
-    if engine == "trigger":
-        return await run_trigger_task_and_respond("sum_of_squares", {"numbers": data["numbers"]})
     return await run_task_and_respond(get_client(), get_task_name("sum_of_squares"), [data["numbers"]])
 
 @router.post("/deep_parallel_tree", response_model=TaskResponse)
-async def deep_parallel_tree(data: dict[str, Any], engine: str = "render"):
+async def deep_parallel_tree(data: dict[str, Any]):
     """
     Execute the deep_parallel_tree task – a 10+ level deep, 100+ subtask
     parallel tree that fans out and reduces across multiple phases.
@@ -63,11 +59,6 @@ async def deep_parallel_tree(data: dict[str, Any], engine: str = "render"):
     Input: {"numbers": [1,2,3,4,5,6,7,8,9,10,11,12], "chunk_size": 4}
     (chunk_size is optional, defaults to 4)
     """
-    if engine == "trigger":
-        payload: dict[str, Any] = {"numbers": data["numbers"]}
-        if "chunk_size" in data:
-            payload["chunkSize"] = data["chunk_size"]
-        return await run_trigger_task_and_respond("deep_parallel_tree", payload)
     args = [data["numbers"]]
     if "chunk_size" in data:
         args.append(data["chunk_size"])
