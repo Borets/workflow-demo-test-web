@@ -4,6 +4,7 @@ Subtask execution examples.
 Demonstrates how tasks can call other tasks using await syntax.
 """
 
+import asyncio
 import logging
 from app import app
 from basic_tasks import square, multiply
@@ -19,11 +20,8 @@ async def add_squares(a: int, b: int) -> int:
     """
     logger.info(f"Computing add_squares: {a}² + {b}²")
 
-    # Execute square task as a subtask
-    result1 = await square(a)
+    result1, result2 = await asyncio.gather(square(a), square(b))
     logger.info(f"First square result: {result1}")
-
-    result2 = await square(b)
     logger.info(f"Second square result: {result2}")
 
     total = result1 + result2

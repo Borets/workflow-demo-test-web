@@ -1,7 +1,9 @@
 import { useTaskExecution } from '../contexts/TaskExecutionContext'
 import { getTaskStatus } from '../services/api'
 
-const POLL_INTERVAL = 1000
+const FAST_POLL_INTERVAL = 250
+const STEADY_POLL_INTERVAL = 1000
+const FAST_POLL_WINDOW_MS = 3000
 
 export function useTaskRunner() {
   const { addTask, completeTask, failTask, updateTask } = useTaskExecution()
@@ -37,8 +39,14 @@ export function useTaskRunner() {
   }
 
   const pollUntilDone = async (taskId: string, taskRunId: string) => {
+    const startedAt = Date.now()
     while (true) {
-      await new Promise(r => setTimeout(r, POLL_INTERVAL))
+      const elapsedMs = Date.now() - startedAt
+      const pollInterval = elapsedMs < FAST_POLL_WINDOW_MS
+        ? FAST_POLL_INTERVAL
+        : STEADY_POLL_INTERVAL
+
+      await new Promise(r => setTimeout(r, pollInterval))
       try {
         const res = await getTaskStatus(taskRunId)
         const data = res.data

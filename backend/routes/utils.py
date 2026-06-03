@@ -7,32 +7,36 @@ import os
 from fastapi import HTTPException
 from render_sdk import RenderAsync
 from render_sdk.client.errors import RenderError
-from render_sdk.public_api.api.workflows_beta import list_workflows
 import httpx
 
 logger = logging.getLogger(__name__)
 
 _workflow_id_cache: str | None = None
+_client: RenderAsync | None = None
 
 
-async def get_workflow_id(client: RenderAsync) -> str | None:
+def get_client() -> RenderAsync:
+    """Reuse the SDK client across requests to avoid per-task setup overhead."""
+    global _client
+    if _client is None:
+        _client = RenderAsync()
+    return _client
+
+
+def get_task_name(task: str) -> str:
+    """Get full task name with service slug if configured."""
+    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "workflow-demo-test-web")
+    return f"{service_slug}/{task}"
+
+
+def get_workflow_id() -> str | None:
     global _workflow_id_cache
     if _workflow_id_cache is not None:
         return _workflow_id_cache
-    try:
-        response = await list_workflows.asyncio_detailed(client=client._client.internal, limit=10)
-        if response.parsed and isinstance(response.parsed, list) and len(response.parsed) > 0:
-            service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "workflow-demo-test-web")
-            for item in response.parsed:
-                wf = item.workflow
-                if wf.slug == service_slug:
-                    _workflow_id_cache = wf.id
-                    return _workflow_id_cache
-            # Fallback to first workflow if no slug match
-            _workflow_id_cache = response.parsed[0].workflow.id
-            return _workflow_id_cache
-    except Exception as e:
-        logger.warning(f"Failed to fetch workflow ID: {e}")
+    configured_workflow_id = os.getenv("WORKFLOW_ID")
+    if configured_workflow_id:
+        _workflow_id_cache = configured_workflow_id
+        return _workflow_id_cache
     return None
 
 
@@ -47,7 +51,7 @@ async def run_task_and_respond(
 
     try:
         result = await client.workflows.start_task(task_name, args)
-        wf_id = await get_workflow_id(client)
+        wf_id = get_workflow_id()
         return TaskResponse(
             task_run_id=result.id,
             workflow_id=wf_id,
@@ -62,10 +66,10 @@ async def get_task_status(task_run_id: str) -> "TaskResponse":
     """Poll a task run's current status."""
     from ..models import TaskResponse
 
-    client = RenderAsync()
+    client = get_client()
     try:
         details = await client.workflows.get_task_run(task_run_id)
-        wf_id = await get_workflow_id(client)
+        wf_id = get_workflow_id()
         status = details.status.value if hasattr(details.status, 'value') else str(details.status)
         result = None
         message = f"Task {status}"

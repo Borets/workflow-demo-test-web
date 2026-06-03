@@ -4,22 +4,11 @@ Endpoints for OpenAI integration examples.
 
 from typing import Any
 from fastapi import APIRouter
-from render_sdk import RenderAsync
-import os
 
 from ..models import TaskResponse
-from .utils import run_task_and_respond
+from .utils import get_client, get_task_name, run_task_and_respond
 
 router = APIRouter()
-
-def get_client() -> RenderAsync:
-    """Get Render async API client."""
-    return RenderAsync()
-
-def get_task_name(task: str) -> str:
-    """Get full task name with service slug if configured."""
-    service_slug = os.getenv("WORKFLOW_SERVICE_SLUG", "workflow-demo-test-web")
-    return f"{service_slug}/{task}"
 
 @router.post("/analyze_sentiment", response_model=TaskResponse)
 async def analyze_sentiment(data: dict[str, Any]):

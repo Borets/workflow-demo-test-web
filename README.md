@@ -75,6 +75,7 @@ Error: Could not import module 'main': No module named 'main'
 **Environment variables:**
 - `RENDER_API_KEY` — same key as above
 - `WORKFLOW_SERVICE_SLUG` — the slug of your workflow service (visible in the dashboard URL, e.g. `workflow-demo-test-web`). This tells the API which workflow service to route tasks to.
+- `WORKFLOW_ID` — (optional) workflow service ID for dashboard links without an extra metadata lookup
 - `OPENAI_API_KEY` — (optional)
 - `CORS_ORIGINS` — (optional) comma-separated list of additional allowed origins
 
@@ -257,6 +258,7 @@ workflow-demo-test-web/
 |----------|----------|---------|-------------|
 | `RENDER_API_KEY` | Yes | Backend, Workflows | Render API key from Account Settings |
 | `WORKFLOW_SERVICE_SLUG` | Yes | Backend | Slug of your workflow service (e.g. `workflow-demo-test-web`) |
+| `WORKFLOW_ID` | No | Backend | Workflow service ID for dashboard links; avoids a metadata lookup on fast task responses |
 | `OPENAI_API_KEY` | No | Workflows | Required only for OpenAI/AI tasks |
 | `VITE_API_URL` | Yes | Frontend | Backend service URL |
 | `CORS_ORIGINS` | No | Backend | Additional allowed CORS origins (comma-separated) |
