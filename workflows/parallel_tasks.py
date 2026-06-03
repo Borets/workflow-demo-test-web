@@ -7,7 +7,9 @@ recursive tree that spawns 100+ subtasks across 10+ levels.
 
 import asyncio
 import logging
+import random
 from app import app
+from render_sdk import Retry
 from basic_tasks import square, cube, add_numbers, multiply
 
 logger = logging.getLogger(__name__)
@@ -63,6 +65,74 @@ async def sum_of_squares(numbers: list[int]) -> dict:
         "numbers": numbers,
         "squares": squares,
         "sum": total
+    }
+
+
+@app.task(retry=Retry(max_retries=3, wait_duration_ms=250, backoff_scaling=1.0))
+async def flaky_attempt_child(task_number: int, failure_rate: float = 0.7) -> dict:
+    """Randomly fail so retry attempts show up in the run details."""
+    roll = random.random()
+    logger.info(
+        "[flaky_attempt_child] task=%s roll=%.3f failure_rate=%.3f",
+        task_number,
+        roll,
+        failure_rate,
+    )
+
+    if roll < failure_rate:
+        raise RuntimeError(
+            f"Random failure for task {task_number} "
+            f"(roll={roll:.3f}, failure_rate={failure_rate:.3f})"
+        )
+
+    return {
+        "task_number": task_number,
+        "status": "succeeded",
+        "roll": round(roll, 3),
+        "failure_rate": failure_rate,
+    }
+
+
+@app.task
+async def flaky_attempt_batch(failure_rate: float = 0.7) -> dict:
+    """
+    Launch 10 retry-enabled flaky tasks in parallel.
+
+    Failed children are captured in the summary so the parent run completes
+    while the dashboard still shows child task attempts and exhausted retries.
+    """
+    task_count = 10
+    logger.info(
+        "[flaky_attempt_batch] launching %s flaky tasks with failure_rate=%.3f",
+        task_count,
+        failure_rate,
+    )
+
+    child_runs = [
+        flaky_attempt_child(task_number, failure_rate)
+        for task_number in range(1, task_count + 1)
+    ]
+    child_results = await asyncio.gather(*child_runs, return_exceptions=True)
+
+    tasks = []
+    for task_number, result in enumerate(child_results, start=1):
+        if isinstance(result, Exception):
+            tasks.append({
+                "task_number": task_number,
+                "status": "failed",
+                "error": str(result),
+            })
+        else:
+            tasks.append(result)
+
+    succeeded = sum(1 for item in tasks if item["status"] == "succeeded")
+    failed = task_count - succeeded
+    return {
+        "task_count": task_count,
+        "failure_rate": failure_rate,
+        "succeeded": succeeded,
+        "failed": failed,
+        "tasks": tasks,
     }
 
 

@@ -173,6 +173,7 @@ Open `http://localhost:5173`.
 ### Parallel Execution
 - **Compute Multiple** — squares and cubes in parallel
 - **Sum of Squares** — parallel computation with aggregation
+- **Flaky Attempt Batch** — runs 10 retry-enabled tasks that randomly fail for attempt UI testing
 - **Deep Parallel Tree** — 10+ levels deep, 100+ subtasks across scatter/gather, cross-reduce, and recursive fan-in phases (see below)
 
 ### OpenAI Integration (requires `OPENAI_API_KEY`)
@@ -278,6 +279,11 @@ curl -X POST http://localhost:8000/api/basic/square \
 curl -X POST http://localhost:8000/api/parallel/deep_parallel_tree \
   -H "Content-Type: application/json" \
   -d '{"numbers": [1,2,3,4,5,6,7,8,9,10,11,12]}'
+
+# Flaky attempt batch
+curl -X POST http://localhost:8000/api/parallel/flaky_attempt_batch \
+  -H "Content-Type: application/json" \
+  -d '{"failure_rate": 0.7}'
 ```
 
 API docs available at `/docs` (Swagger) and `/redoc` when backend is running.

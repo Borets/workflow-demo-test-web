@@ -39,6 +39,22 @@ async def sum_of_squares(data: dict[str, Any]):
     """
     return await run_task_and_respond(get_client(), get_task_name("sum_of_squares"), [data["numbers"]])
 
+@router.post("/flaky_attempt_batch", response_model=TaskResponse)
+async def flaky_attempt_batch(data: dict[str, Any]):
+    """
+    Execute 10 retry-enabled flaky child tasks in parallel.
+
+    Input: {"failure_rate": 0.7}
+    Output: Summary of succeeded and exhausted child tasks.
+    """
+    failure_rate = float(data.get("failure_rate", 0.7))
+    failure_rate = max(0.0, min(failure_rate, 1.0))
+    return await run_task_and_respond(
+        get_client(),
+        get_task_name("flaky_attempt_batch"),
+        [failure_rate],
+    )
+
 @router.post("/deep_parallel_tree", response_model=TaskResponse)
 async def deep_parallel_tree(data: dict[str, Any]):
     """

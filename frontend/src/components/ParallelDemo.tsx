@@ -1,5 +1,10 @@
 import { useState } from 'react'
-import { runComputeMultiple, runSumOfSquares, runDeepParallelTree } from '../services/api'
+import {
+  runComputeMultiple,
+  runSumOfSquares,
+  runFlakyAttemptBatch,
+  runDeepParallelTree,
+} from '../services/api'
 import { useTaskRunner } from '../hooks/useTaskRunner'
 
 export default function ParallelDemo() {
@@ -8,11 +13,18 @@ export default function ParallelDemo() {
   // Form states
   const [computeNumbers, setComputeNumbers] = useState('2, 3, 4')
   const [sumNumbers, setSumNumbers] = useState('1, 2, 3, 4')
+  const [failureRate, setFailureRate] = useState('0.7')
   const [treeNumbers, setTreeNumbers] = useState('1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12')
   const [chunkSize, setChunkSize] = useState('4')
 
   const parseNumbers = (input: string): number[] => {
     return input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
+  }
+
+  const parseFailureRate = (): number => {
+    const parsed = parseFloat(failureRate)
+    if (Number.isNaN(parsed)) return 0.7
+    return Math.max(0, Math.min(parsed, 1))
   }
 
   return (
@@ -78,6 +90,39 @@ export default function ParallelDemo() {
               'Sum of Squares',
               () => runSumOfSquares(parseNumbers(sumNumbers)),
               { numbers: parseNumbers(sumNumbers) }
+            )}
+            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
+          >
+            Run Task
+          </button>
+        </div>
+      </div>
+
+      {/* Flaky Attempt Batch Task */}
+      <div className="border rounded-lg p-4">
+        <h3 className="text-lg font-medium mb-2">Flaky Attempt Batch</h3>
+        <p className="text-gray-600 text-sm mb-4">
+          Run 10 retry-enabled tasks that randomly fail
+        </p>
+        <div className="bg-gray-50 p-3 rounded mb-4 text-sm">
+          <strong>Workflow:</strong> Launches 10 flaky child tasks in parallel. Each child can retry up to
+          three times before it is marked failed, and the parent returns a summary of the full batch.
+        </div>
+        <div className="flex gap-3">
+          <input
+            type="number"
+            value={failureRate}
+            onChange={(e) => setFailureRate(e.target.value)}
+            className="border rounded px-3 py-2 w-36"
+            min="0"
+            max="1"
+            step="0.05"
+          />
+          <button
+            onClick={() => runTask(
+              'Flaky Attempt Batch',
+              () => runFlakyAttemptBatch(parseFailureRate()),
+              { task_count: 10, failure_rate: parseFailureRate() }
             )}
             className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
           >

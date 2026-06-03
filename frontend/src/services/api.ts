@@ -40,6 +40,9 @@ export const runComputeMultiple = (numbers: number[]) =>
 export const runSumOfSquares = (numbers: number[]) =>
   api.post<TaskResponse>('/api/parallel/sum_of_squares', { numbers })
 
+export const runFlakyAttemptBatch = (failure_rate: number) =>
+  api.post<TaskResponse>('/api/parallel/flaky_attempt_batch', { failure_rate })
+
 export const runDeepParallelTree = (numbers: number[], chunk_size?: number) =>
   api.post<TaskResponse>('/api/parallel/deep_parallel_tree', { numbers, ...(chunk_size && { chunk_size }) })
 
