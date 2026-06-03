@@ -17,18 +17,8 @@ from render_sdk import Retry
 
 logger = logging.getLogger(__name__)
 
-# OpenAI client initialization (lazy loading)
 _openai_client = None
 _openai_import_error = None
-
-try:
-    from openai import AsyncOpenAI
-except ImportError as e:
-    _openai_import_error = e
-    logger.warning(
-        "OpenAI package not installed - OpenAI tasks will fail. "
-        "Install with: pip install openai"
-    )
 
 def get_openai_client():
     """
@@ -44,7 +34,7 @@ def get_openai_client():
         ImportError: If the openai package is not installed
         ValueError: If OPENAI_API_KEY is not set
     """
-    global _openai_client
+    global _openai_client, _openai_import_error
 
     if _openai_import_error:
         raise ImportError(
@@ -52,6 +42,18 @@ def get_openai_client():
         ) from _openai_import_error
 
     if _openai_client is None:
+        try:
+            from openai import AsyncOpenAI
+        except ImportError as e:
+            _openai_import_error = e
+            logger.warning(
+                "OpenAI package not installed - OpenAI tasks will fail. "
+                "Install with: pip install openai"
+            )
+            raise ImportError(
+                "OpenAI package not installed. Install with: pip install openai"
+            ) from e
+
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise ValueError(
