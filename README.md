@@ -1,6 +1,6 @@
 # Render Workflows Demo
 
-A full-stack example application demonstrating the Render Workflows SDK (`render-sdk` v0.6.1) with real-world use cases including parallel fan-out/fan-in trees, OpenAI integration, and multi-level subtask composition.
+A full-stack example application demonstrating the Render Workflows SDK (`render-sdk` v0.7.0) with real-world use cases including parallel fan-out/fan-in trees, OpenAI integration, and multi-level subtask composition.
 
 ## Architecture
 
@@ -89,9 +89,9 @@ Error: Could not import module 'main': No module named 'main'
 **Environment variables:**
 - `VITE_API_URL` — URL of your backend service (e.g. `https://workflow-demo-test-web-api.onrender.com`)
 
-## SDK v0.6.1 Notes
+## SDK v0.7.0 Notes
 
-This project pins `render-sdk==0.6.1`. Current client and task-definition patterns used here:
+This project pins `render-sdk==0.7.0`. Current client and task-definition patterns used here:
 
 ### Python SDK
 
